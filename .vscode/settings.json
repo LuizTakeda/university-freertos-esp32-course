@@ -10,5 +10,10 @@
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32"
   },
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "files.associations": {
+    ".als.json": "jsonc",
+    "esp_event.h": "c",
+    "esp_log.h": "c"
+  }
 }
