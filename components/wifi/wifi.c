@@ -42,6 +42,10 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 
 static const char *TAG = "wifi-station";
 static int s_retry_num = 0;
+static char ip[18] = "";
+
+static void (*on_connection_callback)(void) = NULL;
+static void (*on_disconnection_callback)(void) = NULL;
 
 /* FreeRTOS event group to signal when we are connected */
 static EventGroupHandle_t s_wifi_event_group;
@@ -50,7 +54,7 @@ static EventGroupHandle_t s_wifi_event_group;
 // Functions
 //**************************************************
 
-void wifi_connect(void)
+bool wifi_connect(void)
 {
   s_wifi_event_group = xEventGroupCreate();
 
@@ -69,6 +73,7 @@ void wifi_connect(void)
                                                       &event_handler,
                                                       NULL,
                                                       &instance_any_id));
+
   ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
                                                       IP_EVENT_STA_GOT_IP,
                                                       &event_handler,
@@ -100,18 +105,34 @@ void wifi_connect(void)
    * happened. */
   if (bits & WIFI_CONNECTED_BIT)
   {
-    ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-             CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    return true;
   }
   else if (bits & WIFI_FAIL_BIT)
   {
-    ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-             CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s", CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    return false;
   }
   else
   {
     ESP_LOGE(TAG, "UNEXPECTED EVENT");
+    return false;
   }
+}
+
+void wifi_on_connection(void (*callback)(void))
+{
+  on_connection_callback = callback;
+}
+
+void wifi_on_disconnection(void (*callback)(void))
+{
+  on_disconnection_callback = callback;
+}
+
+char *wifi_get_ip()
+{
+  return ip;
 }
 
 //**************************************************
@@ -138,12 +159,25 @@ static void event_handler(void *arg, esp_event_base_t event_base,
       xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
     }
     ESP_LOGI(TAG, "connect to the AP fail");
+
+    if (on_disconnection_callback != NULL)
+    {
+      on_disconnection_callback();
+    }
   }
   else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
   {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+
+    sprintf(ip, IPSTR, IP2STR(&event->ip_info.ip));
+
     ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
     s_retry_num = 0;
     xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+
+    if (on_connection_callback != NULL)
+    {
+      on_connection_callback();
+    }
   }
 }
