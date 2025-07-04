@@ -5,10 +5,15 @@
   "idf.openOcdConfigs": [
     "board/esp32-wrover-kit-3.3v.cfg"
   ],
-  "idf.portWin": "COM4",
+  "idf.portWin": "COM5",
   "idf.toolsPathWin": "C:\\Users\\umota\\.espressif",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32"
   },
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "files.associations": {
+    ".als.json": "jsonc",
+    "esp_event.h": "c",
+    "esp_log.h": "c"
+  }
 }
