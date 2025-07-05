@@ -1,3 +1,4 @@
+import "./dashboard.scss";
 import DashboardContentElement from "./dashboard-content";
 import DashboardMenuElement, { OptionClickEvent } from "./dashboard-menu";
 
@@ -15,7 +16,6 @@ export default class DashboardStruct extends HTMLElement {
   connectedCallback() {
     this.getMenu();
     this.getContent();
-
 
     this.menu!.addEventListener("option-click", (event) => {
       this.content!.setActive(event.detail.target);
