@@ -2,11 +2,15 @@ import DashboardOptionElement from "./dashboard-option";
 
 DashboardOptionElement;
 
-type OptionClickCallback = (name: string) => void;
+export type OptionClickEvent = CustomEvent<{ target: string }>;
+
+declare global {
+  interface HTMLElementEventMap {
+    "option-click": OptionClickEvent;
+  }
+}
 
 export default class DashboardMenuElement extends HTMLElement {
-  private onOptionClickCallback: OptionClickCallback = (_) => { };
-
   constructor() {
     super();
   }
@@ -16,14 +20,15 @@ export default class DashboardMenuElement extends HTMLElement {
 
     options.forEach((option) => {
       option.onclick = () => {
-        console.log("Botao", option.target);
-      }
+        if (option.target !== null) {
+          this.dispatchEvent(new CustomEvent("option-click", {
+            detail: { target: option.target },
+            bubbles: true
+          }));
+        }
+      };
     });
-  }
-
-  onOptionClick(callback: OptionClickCallback) {
-    this.onOptionClickCallback = callback;
   }
 }
 
-customElements.define("dashboard-menu", DashboardMenuElement)
+customElements.define("dashboard-menu", DashboardMenuElement);

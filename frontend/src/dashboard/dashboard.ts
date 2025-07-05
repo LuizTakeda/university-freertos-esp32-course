@@ -1,32 +1,40 @@
 import DashboardContentElement from "./dashboard-content";
-import DashboardMenuElement from "./dashboard-menu";
+import DashboardMenuElement, { OptionClickEvent } from "./dashboard-menu";
 
-DashboardContentElement;
 DashboardMenuElement;
+DashboardContentElement;
 
 export default class DashboardStruct extends HTMLElement {
+  private menu: DashboardMenuElement | null = null;
+  private content: DashboardContentElement | null = null;
+
   constructor() {
     super();
   }
 
   connectedCallback() {
-    this.style.display = "block";
-    this.style.border = "solid 1px red"
+    this.getMenu();
+    this.getContent();
 
-    const menu = this.querySelector("dashboard-menu") as DashboardMenuElement | null;
-    if (menu === null) {
+
+    this.menu!.addEventListener("option-click", (event) => {
+      this.content!.setActive(event.detail.target);
+    })
+  }
+
+  private getMenu() {
+    this.menu = this.querySelector("dashboard-menu") as DashboardMenuElement | null;
+    if (this.menu === null) {
       throw new Error("Dashboard menu is null");
     }
+  }
 
-    const content = this.querySelector("dashboard-content") as DashboardContentElement | null;
-    if (content === null) {
+  private getContent() {
+    this.content = this.querySelector("dashboard-content") as DashboardContentElement | null;
+    if (this.content === null) {
       throw new Error("Dashboard content is null");
     }
-
-    menu.onOptionClick((optionName) => {
-      console.log(optionName);
-    })
   }
 }
 
-customElements.define("dashboard-struct", DashboardStruct)
+customElements.define("dashboard-struct", DashboardStruct);

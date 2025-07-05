@@ -3,12 +3,9 @@ export default class DashboardOptionElement extends HTMLElement {
     super();
   }
 
-  connectedCallback() {
-  }
-
   get target() {
     return this.getAttribute("target");
   }
 }
 
-customElements.define("dashboard-option", DashboardOptionElement)
+customElements.define("dashboard-option", DashboardOptionElement);
