@@ -4,6 +4,7 @@
 #include "esp_log.h"
 
 #include "wifi.h"
+#include "web_server.h"
 
 //**************************************************
 // Function Prototypes
@@ -47,9 +48,12 @@ void app_main(void)
 static void on_wifi_connection()
 {
 	ESP_LOGI(TAG, "wifi connection");
+
+	web_server_start();
 }
 
 static void on_wifi_disconnection()
 {
 	ESP_LOGI(TAG, "wifi disconnection");
+	web_server_stop();
 }

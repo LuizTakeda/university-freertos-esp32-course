@@ -15,6 +15,18 @@
     ".als.json": "jsonc",
     "esp_event.h": "c",
     "esp_log.h": "c",
-    "string.h": "c"
+    "string.h": "c",
+    "esp_chip_info.h": "c",
+    "esp_random.h": "c",
+    "array": "c",
+    "charconv": "c",
+    "compare": "c",
+    "complex": "c",
+    "functional": "c",
+    "ratio": "c",
+    "tuple": "c",
+    "type_traits": "c",
+    "utility": "c",
+    "variant": "c"
   }
 }
