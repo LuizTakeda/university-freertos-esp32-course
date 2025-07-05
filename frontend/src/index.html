@@ -4,11 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>FreeRTOS + ESP32</title>
 </head>
 
 <body>
-  <my-element></my-element>
+  <dashboard-struct>
+    <dashboard-menu>
+      <dashboard-option target="home">Home</dashboard-option>
+      <dashboard-option target="i/o">Inputs</dashboard-option>
+    </dashboard-menu>
+    <dashboard-content>
+      <dashboard-page name="home">
+        <h1>Home Page</h1>
+      </dashboard-page>
+      <dashboard-page name="i/o">
+        <h1>I/O Page</h1>
+      </dashboard-page>
+    </dashboard-content>
+  </dashboard-struct>
 
   <script src="bundle.js"></script>
 </body>
