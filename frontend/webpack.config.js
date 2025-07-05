@@ -1,6 +1,7 @@
 const HtmlMinimizerPlugin = require("html-minimizer-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const path = require('path');
 
 module.exports = {
@@ -16,6 +17,17 @@ module.exports = {
       {
         test: /\.html$/i,
         type: "asset/resource",
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
+        ],
       },
     ],
   },
@@ -46,6 +58,7 @@ module.exports = {
           },
         },
       }),
+      new CssMinimizerPlugin(),
       new HtmlMinimizerPlugin(),
     ],
   },
