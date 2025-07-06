@@ -29,6 +29,10 @@ module.exports = {
           "sass-loader",
         ],
       },
+      {
+        test: /\.svg$/i,
+        use: 'raw-loader',
+      },
     ],
   },
   resolve: {

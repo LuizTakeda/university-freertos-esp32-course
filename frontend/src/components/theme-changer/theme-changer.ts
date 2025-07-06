@@ -1,3 +1,4 @@
+import IconElement from "../icon/icon";
 import "./theme-changer.scss"
 
 // Type for valid theme names
@@ -68,7 +69,13 @@ export default class ThemeChangerElement extends HTMLElement {
 
   // Update element text when theme changes
   private handleThemeChange = (event: ThemeChangeEvent) => {
-    this.innerText = event.detail.theme;
+    this.innerHTML = "";
+    
+    const icon = new IconElement();
+
+    icon.name = event.detail.theme === "light-theme" ? "sun" : "moon";
+
+    this.append(icon);
   };
 }
 

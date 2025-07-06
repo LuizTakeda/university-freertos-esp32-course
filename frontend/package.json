@@ -21,6 +21,7 @@
     "css-minimizer-webpack-plugin": "^7.0.2",
     "express": "^5.1.0",
     "html-minimizer-webpack-plugin": "^5.0.2",
+    "raw-loader": "^4.0.2",
     "sass": "^1.89.2",
     "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
