@@ -5,13 +5,17 @@ $themes: (
     bg: #f7f9fc,
     menu: #ffffff,
     text: #2c3e50,
-    button: #3498db,
+    button: #1e1e2f,
+    button-hover: #2e2e3f,
+    primary-color-red: #e74c3c
   ),
   dark: (
     bg: #1e1e2f,
     menu: #2d2d3a,
     text: #f1f1f1,
-    button: #2980b9,
+    button: #e1e1e1,
+    button-hover: #f7f9fc,
+    primary-color-red: #c0392b
   )
 );
 

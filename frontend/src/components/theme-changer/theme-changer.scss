@@ -1,4 +1,4 @@
-theme-changer{
+theme-changer {
   display: block;
   position: absolute;
   top: 0;
@@ -6,11 +6,16 @@ theme-changer{
   margin: 15px;
   padding: 5px;
   border-radius: 10px;
-  background-color: white;
-  color: black;
   z-index: 1000;
+  color: var(--color-bg);
 
-  icon-element{
+  background-color: var(--color-button);
+
+  &:hover {
+    background-color: var(--color-button-hover);
+  }
+
+  icon-element {
     font-size: 26px;
   }
 }
