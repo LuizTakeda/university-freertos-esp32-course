@@ -1,16 +1,58 @@
 dashboard-struct {
   display: block;
   position: absolute;
-  height: 100svh;
-  width: 100svw;
+  height: 100vh;
+  width: 100vw;
   display: flex;
 }
 
 dashboard-menu {
-  width: 300px;
   background-color: beige;
   display: flex;
   flex-direction: column;
+
+  .button {
+    display: none;
+  }
+
+  @media (max-width: 950px) {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 100%;
+    overflow-x: hidden;
+    top: calc(100% - 70px);
+    transition: all .8s;
+    align-items: center;
+    border-radius: 15px 15px;
+
+    .button {
+      display: block;
+      width: 100%;
+      border: none;
+      font-size: 24px;
+      font-weight: bolder;
+      padding: 10px;
+
+      span {
+        transition: all .8s;
+        transform: rotate(0deg);
+        display: inline-block;
+      }
+    }
+
+    &.open {
+      top: 10%;
+
+      .button>span {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  @media (min-width: 950px) {
+    width: 300px;
+  }
 }
 
 dashboard-content {
@@ -20,13 +62,15 @@ dashboard-content {
 dashboard-option {
   display: flex;
   align-items: center;
-  justify-content: left;
+  justify-content: center;
   padding: 15px;
   font-weight: bold;
   font-size: 24px;
   transition: all .3s;
   cursor: pointer;
-  &:hover{
+  width: 100%;
+
+  &:hover {
     background-color: rgba(0, 0, 0, 0.166);
   }
 }

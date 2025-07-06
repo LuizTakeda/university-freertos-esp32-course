@@ -28,6 +28,20 @@ export default class DashboardMenuElement extends HTMLElement {
         }
       };
     });
+
+    this.addButton();
+  }
+
+  private addButton() {
+    const button = document.createElement("button");
+
+    button.className = "button";
+    button.innerHTML = "<span>^</span>";
+
+    button.onclick = () => this.classList.toggle("open");
+
+
+    this.prepend(button);
   }
 }
 

@@ -1,3 +1,16 @@
-body{
+:root {
+  --font-ui: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+body {
   margin: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button,
+.button,
+[role="button"] {
+  cursor: pointer;
 }
