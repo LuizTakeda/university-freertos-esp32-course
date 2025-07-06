@@ -2,7 +2,7 @@
 
 This dashboard is built using [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for modular UI elements, [SASS](https://sass-lang.com/) for styling, and [Webpack](https://webpack.js.org/) to bundle and minify the project into a single JavaScript file.
 
-This setup ensures minimal file size, ideal for embedded platforms like the ESP32.
+This setup ensures a minimal file size, making it ideal for embedded platforms like the ESP32.
 
 ## Development
 
