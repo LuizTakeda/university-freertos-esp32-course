@@ -1,0 +1,25 @@
+@use "sass:map";
+
+$themes: (
+  light: (
+    bg: #f7f9fc,
+    menu: #ffffff,
+    text: #2c3e50,
+    button: #3498db,
+  ),
+  dark: (
+    bg: #1e1e2f,
+    menu: #2d2d3a,
+    text: #f1f1f1,
+    button: #2980b9,
+  )
+);
+
+// Loop through each theme and define CSS variables inside its class
+@each $theme-name, $colors in $themes {
+  .#{$theme-name}-theme {
+    @each $key, $value in $colors {
+      --color-#{$key}: #{$value};
+    }
+  }
+}
