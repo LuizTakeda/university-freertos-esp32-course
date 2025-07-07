@@ -1,8 +1,9 @@
 import "./icon.scss";
 import Moon from "./svg/moon-svgrepo-com.svg";
 import Sun from "./svg/sun-svgrepo-com.svg";
+import ArrowUp from "./svg/alt-arrow-up-svgrepo-com.svg";
 
-type Name = "" | "moon" | "sun";
+type Name = "" | "moon" | "sun" | "arrow-up";
 
 export default class IconElement extends HTMLElement {
   private _name: Name;
@@ -21,11 +22,15 @@ export default class IconElement extends HTMLElement {
       case "moon":
         this.innerHTML = Moon;
         break;
-        
+
       case "sun":
         this.innerHTML = Sun;
         break;
-        
+
+      case "arrow-up":
+        this.innerHTML = ArrowUp;
+        break
+
       default:
     }
   }

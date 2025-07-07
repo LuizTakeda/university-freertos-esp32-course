@@ -7,7 +7,7 @@ dashboard-struct {
 }
 
 dashboard-menu {
-  background-color: beige;
+  background-color: var(--color-menu);
   display: flex;
   flex-direction: column;
 
@@ -22,20 +22,23 @@ dashboard-menu {
     height: 100%;
     overflow-x: hidden;
     top: calc(100% - 70px);
-    transition: all .8s;
+    transition: top .8s;
     align-items: center;
     border-radius: 15px 15px;
 
     .button {
-      display: block;
+      background-color: var(--color-menu);
+      color: var(--color-button);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       border: none;
-      font-size: 24px;
       font-weight: bolder;
       padding: 10px;
 
-      span {
-        transition: all .8s;
+      icon-element {
+        transition: transform .8s;
         transform: rotate(0deg);
         display: inline-block;
       }
@@ -44,7 +47,7 @@ dashboard-menu {
     &.open {
       top: 10%;
 
-      .button>span {
+      .button icon-element {
         transform: rotate(180deg);
       }
     }
