@@ -1,0 +1,83 @@
+dashboard-struct {
+  display: block;
+  position: absolute;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+}
+
+dashboard-menu {
+  background-color: var(--color-menu);
+  display: flex;
+  flex-direction: column;
+
+  .button {
+    display: none;
+  }
+
+  @media (max-width: 950px) {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 100%;
+    overflow-x: hidden;
+    top: calc(100% - 70px);
+    transition: top .8s;
+    align-items: center;
+    border-radius: 15px 15px;
+
+    .button {
+      background-color: var(--color-menu);
+      color: var(--color-button);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: none;
+      font-weight: bolder;
+      padding: 10px;
+
+      icon-element {
+        transition: transform .8s;
+        transform: rotate(0deg);
+        display: inline-block;
+      }
+    }
+
+    &.open {
+      top: 10%;
+
+      .button icon-element {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  @media (min-width: 950px) {
+    width: 300px;
+  }
+}
+
+dashboard-content {
+  flex: 1;
+}
+
+dashboard-option {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 24px;
+  transition: all .3s;
+  cursor: pointer;
+  padding: 0 15px;
+  width: calc(100% - 30px);
+  height: 80px;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.166);
+  }
+
+  @media (max-width: 950px) {
+    justify-content: center;
+  }
+}

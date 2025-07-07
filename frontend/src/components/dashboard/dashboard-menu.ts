@@ -1,3 +1,4 @@
+import IconElement from "../icon/icon";
 import DashboardOptionElement from "./dashboard-option";
 
 DashboardOptionElement;
@@ -28,6 +29,21 @@ export default class DashboardMenuElement extends HTMLElement {
         }
       };
     });
+
+    this.addButton();
+  }
+
+  private addButton() {
+    const button = document.createElement("button");
+    button.className = "button";
+    button.onclick = () => this.classList.toggle("open");
+
+    const icon = new IconElement();
+    icon.name = "arrow-up";
+
+    button.append(icon);
+
+    this.prepend(button);
   }
 }
 
