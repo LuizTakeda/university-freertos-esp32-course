@@ -6,7 +6,7 @@ const clients: Set<Response> = new Set();
 const publishEvent = (event: string, data: object) => {
   console.log("pub");
   clients.forEach((client) => {
-    client.write(JSON.stringify({ event, data }));
+    client.write("data :"+JSON.stringify({ event, data }));
   });
 }
 

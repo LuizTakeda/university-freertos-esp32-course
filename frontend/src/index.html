@@ -5,6 +5,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FreeRTOS + ESP32</title>
+
+  <style>
+    .header {
+      width: calc(100%);
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .header>image-element {
+      display: block;
+      width: 200px;
+    }
+
+    .header>image-element>svg {
+      max-width: 200px;
+    }
+  </style>
 </head>
 
 <body>
@@ -14,18 +34,41 @@
   <theme-changer></theme-changer>
   <dashboard-struct>
     <dashboard-menu>
-      <dashboard-option target="home">Home</dashboard-option>
-      <dashboard-option target="i/o">Inputs</dashboard-option>
+      <dashboard-option target="home">
+        <icon-element name="home"></icon-element>
+        Home
+      </dashboard-option>
+      <dashboard-option target="i/o">
+        <icon-element name="sort-horizontal"></icon-element>
+        Inputs
+      </dashboard-option>
+      <dashboard-option target="settings">
+        <icon-element name="settings"></icon-element>
+        Settings
+      </dashboard-option>
+      <div class="header">
+        <image-element name="utfpr"></image-element>
+      </div>
     </dashboard-menu>
     <dashboard-content default="home">
       <!-- Home Page -->
       <dashboard-page name="home">
-        <h1>Home Page</h1>
+        <h1 style="text-align: center;">Home Page</h1>
+        <div class="container full center">
+          <span style="font-size: 40px;">
+            🏗️ Work in progress!
+          </span>
+        </div>
       </dashboard-page>
 
       <!-- I/O Page -->
       <dashboard-page name="i/o">
-        <h1>I/O Page</h1>
+        <h1 style="text-align: center;">I/O Page</h1>
+      </dashboard-page>
+
+      <!-- Settings Page -->
+      <dashboard-page name="settings">
+        <h1 style="text-align: center;">Settings Page</h1>
       </dashboard-page>
     </dashboard-content>
   </dashboard-struct>

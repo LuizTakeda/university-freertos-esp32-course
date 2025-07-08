@@ -10,6 +10,7 @@ dashboard-menu {
   background-color: var(--color-menu);
   display: flex;
   flex-direction: column;
+  z-index: 1000;
 
   .button {
     display: none;
@@ -60,6 +61,7 @@ dashboard-menu {
 
 dashboard-content {
   flex: 1;
+  position: relative;
 }
 
 dashboard-option {
@@ -72,12 +74,16 @@ dashboard-option {
   padding: 0 15px;
   width: calc(100% - 30px);
   height: 80px;
-  
+  gap: 10px;
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.166);
   }
 
   @media (max-width: 950px) {
     justify-content: center;
+    flex-direction: column;
+    gap: 0px;
+    padding: 10px 30px;
   }
 }
