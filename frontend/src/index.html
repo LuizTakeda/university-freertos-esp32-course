@@ -14,18 +14,64 @@
   <theme-changer></theme-changer>
   <dashboard-struct>
     <dashboard-menu>
-      <dashboard-option target="home">Home</dashboard-option>
-      <dashboard-option target="i/o">Inputs</dashboard-option>
+
+      <!-- Options -->
+      <dashboard-options>
+        <dashboard-option target="home">
+          <icon-element name="home"></icon-element>
+          Home
+        </dashboard-option>
+        <dashboard-option target="i/o">
+          <icon-element name="sort-horizontal"></icon-element>
+          Input/Output
+        </dashboard-option>
+        <dashboard-option target="analog">
+          <icon-element name="tunning"></icon-element>
+          Analog
+        </dashboard-option>
+        <dashboard-option target="settings">
+          <icon-element name="settings"></icon-element>
+          Settings
+        </dashboard-option>
+      </dashboard-options>
+
+      <!-- Footer -->
+      <dashboard-menu-footer>
+        <a class="clean-a" href="https://www.utfpr.edu.br/" target="_blank">
+          <image-element name="utfpr"></image-element>
+        </a>
+        <a class="clean-a" href="https://luiztakeda.dev" target="_blank">
+          <span class="copyright">
+            &copy; 2025 Luiz Takeda. All rights reserved.
+          </span>
+        </a>
+      </dashboard-menu-footer>
     </dashboard-menu>
     <dashboard-content default="home">
+
       <!-- Home Page -->
       <dashboard-page name="home">
-        <h1>Home Page</h1>
+        <h1 style="text-align: center;">Home Page</h1>
+        <div class="container full center">
+          <span style="font-size: 40px; text-align: center;">
+            🏗️ Work in progress!
+          </span>
+        </div>
       </dashboard-page>
 
       <!-- I/O Page -->
       <dashboard-page name="i/o">
-        <h1>I/O Page</h1>
+        <h1 style="text-align: center;">Input/Output Page</h1>
+      </dashboard-page>
+
+      <!-- Analog Page -->
+      <dashboard-page name="analog">
+        <h1 style="text-align: center;">Analog Page</h1>
+      </dashboard-page>
+
+      <!-- Settings Page -->
+      <dashboard-page name="settings">
+        <h1 style="text-align: center;">Settings Page</h1>
       </dashboard-page>
     </dashboard-content>
   </dashboard-struct>

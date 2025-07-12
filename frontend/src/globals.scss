@@ -17,3 +17,32 @@ button,
 [role="button"] {
   cursor: pointer;
 }
+
+.container {
+  display: flex;
+  flex-direction: column;
+
+  &.full {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  &.center {
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.clean-a {
+  all: unset;
+  cursor: pointer;
+}
+
+.copyright{
+  text-align: center;
+  display: block;
+  font-weight: 600;
+}

@@ -7,24 +7,39 @@ dashboard-struct {
 }
 
 dashboard-menu {
+  z-index: 1000;
   background-color: var(--color-menu);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 
   .button {
     display: none;
+  }
+
+  dashboard-options {}
+
+  dashboard-menu-footer {
+    display: flex;
+    flex-direction: column;
+
+    image-element {
+      svg {
+        width: calc(100% - 60px);
+      }
+    }
   }
 
   @media (max-width: 950px) {
     position: fixed;
     left: 0;
     right: 0;
-    height: 100%;
     overflow-x: hidden;
     top: calc(100% - 70px);
+    bottom: 0;
+    overflow: hidden;
     transition: top .8s;
-    align-items: center;
-    border-radius: 15px 15px;
+    border-radius: 15px 15px 0 0;
 
     .button {
       background-color: var(--color-menu);
@@ -51,6 +66,17 @@ dashboard-menu {
         transform: rotate(180deg);
       }
     }
+
+    dashboard-menu-footer {
+      display: flex;
+      flex-direction: column;
+
+      image-element {
+        svg {
+          width: 200px;
+        }
+      }
+    }
   }
 
   @media (min-width: 950px) {
@@ -60,6 +86,7 @@ dashboard-menu {
 
 dashboard-content {
   flex: 1;
+  position: relative;
 }
 
 dashboard-option {
@@ -72,12 +99,16 @@ dashboard-option {
   padding: 0 15px;
   width: calc(100% - 30px);
   height: 80px;
-  
+  gap: 10px;
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.166);
   }
 
   @media (max-width: 950px) {
     justify-content: center;
+    flex-direction: column;
+    gap: 0px;
+    padding: 10px 15px;
   }
 }
