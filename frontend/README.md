@@ -71,3 +71,21 @@ The dashboard UI is composed of custom Web Components.
 </dashboard-struct>
 ```
 
+## Gallery
+
+### Desktop
+<img width="1920" height="1080" src="https://github.com/user-attachments/assets/7146b382-f8f5-460a-bc46-5b8e12310341" />
+<img width="1920" height="1080" src="https://github.com/user-attachments/assets/8975d8c6-c57c-44df-a68a-540566f63f01" />
+
+
+### Mobile  
+<div>
+  <img width="300" src="https://github.com/user-attachments/assets/b91b1cf1-b31a-43e2-832a-200d8805cee4" />
+  <img width="300" src="https://github.com/user-attachments/assets/4f1af473-ec35-4179-91e2-b9761fa9599d" />
+  
+</div>
+
+<div>
+  <img width="300" src="https://github.com/user-attachments/assets/bac0e8e7-3791-44de-aca5-db9429861d0a" />  
+  <img width="300" src="https://github.com/user-attachments/assets/e6ac00b0-6175-4172-84e5-d7867c0dec91" />
+</div>
