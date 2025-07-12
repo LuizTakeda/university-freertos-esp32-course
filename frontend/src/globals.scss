@@ -18,11 +18,11 @@ button,
   cursor: pointer;
 }
 
-.container{
+.container {
   display: flex;
   flex-direction: column;
 
-  &.full{
+  &.full {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -30,8 +30,19 @@ button,
     right: 0;
   }
 
-  &.center{
+  &.center {
     justify-content: center;
     align-items: center;
   }
+}
+
+.clean-a {
+  all: unset;
+  cursor: pointer;
+}
+
+.copyright{
+  text-align: center;
+  display: block;
+  font-weight: 600;
 }
