@@ -43,7 +43,11 @@ export default class DashboardMenuElement extends HTMLElement {
 
     button.append(icon);
 
-    this.prepend(button);
+    const options = this.querySelector("dashboard-options");
+
+    if (options !== null) {
+      options.prepend(button);
+    }
   }
 }
 

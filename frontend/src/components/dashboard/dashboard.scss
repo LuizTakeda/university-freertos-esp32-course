@@ -7,25 +7,39 @@ dashboard-struct {
 }
 
 dashboard-menu {
+  z-index: 1000;
   background-color: var(--color-menu);
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  justify-content: space-between;
 
   .button {
     display: none;
+  }
+
+  dashboard-options {}
+
+  dashboard-menu-footer {
+    display: flex;
+    flex-direction: column;
+
+    image-element {
+      svg {
+        width: calc(100% - 60px);
+      }
+    }
   }
 
   @media (max-width: 950px) {
     position: fixed;
     left: 0;
     right: 0;
-    height: 100%;
     overflow-x: hidden;
     top: calc(100% - 70px);
+    bottom: 0;
+    overflow: hidden;
     transition: top .8s;
-    align-items: center;
-    border-radius: 15px 15px;
+    border-radius: 15px 15px 0 0;
 
     .button {
       background-color: var(--color-menu);
@@ -50,6 +64,17 @@ dashboard-menu {
 
       .button icon-element {
         transform: rotate(180deg);
+      }
+    }
+
+    dashboard-menu-footer {
+      display: flex;
+      flex-direction: column;
+
+      image-element {
+        svg {
+          width: 200px;
+        }
       }
     }
   }
@@ -84,6 +109,6 @@ dashboard-option {
     justify-content: center;
     flex-direction: column;
     gap: 0px;
-    padding: 10px 30px;
+    padding: 10px 15px;
   }
 }
