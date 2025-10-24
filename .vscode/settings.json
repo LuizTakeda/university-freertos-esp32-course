@@ -27,6 +27,8 @@
     "tuple": "c",
     "type_traits": "c",
     "utility": "c",
-    "variant": "c"
+    "variant": "c",
+    "cstdint": "c",
+    "timers.h": "c"
   }
 }
