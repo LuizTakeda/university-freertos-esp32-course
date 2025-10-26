@@ -22,6 +22,7 @@ export default class DashboardMenuElement extends HTMLElement {
     options.forEach((option) => {
       option.onclick = () => {
         if (option.target !== null) {
+          this.classList.remove("open");
           this.dispatchEvent(new CustomEvent("option-click", {
             detail: { target: option.target },
             bubbles: true
