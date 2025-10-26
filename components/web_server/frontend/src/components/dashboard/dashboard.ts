@@ -18,6 +18,7 @@ export default class DashboardStruct extends HTMLElement {
     this.getContent();
 
     this.menu!.addEventListener("option-click", (event) => {
+      this.menu?.classList.remove("open");
       this.content!.setActive(event.detail.target);
     })
   }
