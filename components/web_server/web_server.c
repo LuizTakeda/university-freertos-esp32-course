@@ -19,6 +19,16 @@ static esp_err_t get_handler(httpd_req_t *req);
 static esp_err_t post_handler(httpd_req_t *req);
 
 //**************************************************
+// Files
+//**************************************************
+
+extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t index_html_end[] asm("_binary_index_html_end");
+
+extern const uint8_t bundle_js_start[] asm("_binary_bundle_js_start");
+extern const uint8_t bundle_js_end[] asm("_binary_bundle_js_end");
+
+//**************************************************
 // Globals
 //**************************************************
 
@@ -81,6 +91,10 @@ void web_server_stop()
 //**************************************************
 // Static Functions
 //**************************************************
+
+static esp_err_t get_index_html_handler(httpd_req_t *req){
+  return ESP_OK;
+}
 
 /**
  * Get exemple
