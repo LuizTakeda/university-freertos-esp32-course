@@ -19,8 +19,14 @@ export default class DigitalOutputElement extends HTMLElement {
     this.removeEventListener("click", this._handleClick);
   }
 
-  get gpio() {
-    return this.getAttribute("gpio");
+  get num() {
+    const num = this.getAttribute("num");
+
+    if (num === null) {
+      throw new Error("Num undefined");
+    }
+
+    return Number(num);
   }
 
   get state() {
@@ -60,7 +66,7 @@ export default class DigitalOutputElement extends HTMLElement {
     this.state = "loading";
 
     try {
-      const result = await fetch(`/api/digital-output/${this.gpio}`);
+      const result = await fetch(`/api/digital-output/${this.num}`);
 
       if (!result.ok) {
         this.state = "error";
@@ -80,7 +86,7 @@ export default class DigitalOutputElement extends HTMLElement {
     this.state = "loading";
 
     try {
-      const result = await fetch(`/api/digital-output/${this.gpio}`, {
+      const result = await fetch(`/api/digital-output/${this.num}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
