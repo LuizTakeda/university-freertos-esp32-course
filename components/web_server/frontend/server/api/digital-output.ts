@@ -1,10 +1,10 @@
 import { Router } from "express";
 
-const digitalInputRouter = Router();
+const digitalOutputRouter = Router();
 
 const outputs = [false, false, false, false];
 
-digitalInputRouter.post("/api/digital-output/:id", (request, response) => {
+digitalOutputRouter.post("/digital-output/:id", (request, response) => {
   const { params, body } = request;
   const { state } = body;
 
@@ -15,7 +15,7 @@ digitalInputRouter.post("/api/digital-output/:id", (request, response) => {
   response.json({ state: outputs[id] });
 });
 
-digitalInputRouter.get("/api/digital-output/:id", (request, response) => {
+digitalOutputRouter.get("/digital-output/:id", (request, response) => {
   const { params } = request;
 
   const id = Number(params.id);
@@ -23,4 +23,4 @@ digitalInputRouter.get("/api/digital-output/:id", (request, response) => {
   response.json({ state: outputs[id] });
 });
 
-export { digitalInputRouter };
+export { digitalOutputRouter };

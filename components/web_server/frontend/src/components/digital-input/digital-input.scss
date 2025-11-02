@@ -1,0 +1,22 @@
+digital-input-element {
+  width: 100%;
+  aspect-ratio: 1/1;
+  display: inline-block;
+  border-radius: 15px;
+
+  &.on {
+    background-color: green;
+  }
+
+  &.off {
+    background-color: orange;
+  }
+
+  &.loading {
+    background-color: blue;
+  }
+
+  &.error {
+    background-color: red;
+  }
+}
