@@ -5,7 +5,9 @@ type Event<N extends string, D extends object> = {
 
 export type NewInputStateEvent = Event<"digital-input", { num: number, value: number }>
 
-type Events = NewInputStateEvent
+export type NewAnalogStateEvent = Event<"analog-input", { num: number, value: number }>
+
+type Events = NewInputStateEvent | NewAnalogStateEvent;
 
 type GetData<E extends Events, N extends E['name']> =
   E extends { name: N, data: infer D } ? D : never;
