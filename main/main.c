@@ -27,7 +27,8 @@ void app_main(void)
 		ESP_ERROR_CHECK(nvs_flash_init());
 	}
 
-	err = wifi_initialize();
+	ESP_ERROR_CHECK (wifi_initialize());
+	ESP_ERROR_CHECK (web_server_initialize());
 }
 
 //**************************************************

@@ -1,10 +1,8 @@
 #ifndef _WEB_SERVER_H
 #define _WEB_SERVER_H
 
-#include <stdbool.h>
+#include "esp_err.h"
 
-bool web_server_start();
-
-void web_server_stop();
+esp_err_t web_server_initialize();
 
 #endif
