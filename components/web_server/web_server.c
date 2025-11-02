@@ -1,10 +1,14 @@
+#include "web_server.h"
+
 #include <stdio.h>
 #include <sys/param.h>
 
 #include "esp_http_server.h"
 #include "esp_log.h"
-
-#include "web_server.h"
+#include "esp_event.h"
+#include "esp_wifi.h"
+#include "lwip/err.h"
+#include "lwip/sys.h"
 
 //**************************************************
 // Define
@@ -14,9 +18,25 @@
 // Static Function Prototypes
 //**************************************************
 
-static esp_err_t get_handler(httpd_req_t *req);
+static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
-static esp_err_t post_handler(httpd_req_t *req);
+static esp_err_t start();
+
+static esp_err_t stop();
+
+static esp_err_t get_index_html_handler(httpd_req_t *req);
+
+static esp_err_t get_bundle_js_handler(httpd_req_t *req);
+
+//**************************************************
+// Files
+//**************************************************
+
+extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t index_html_end[] asm("_binary_index_html_end");
+
+extern const uint8_t bundle_js_start[] asm("_binary_bundle_js_start");
+extern const uint8_t bundle_js_end[] asm("_binary_bundle_js_end");
 
 //**************************************************
 // Globals
@@ -26,109 +46,122 @@ static char TAG[] = "web-server";
 
 static httpd_handle_t server = NULL;
 
-// ##### endpoitns #####
+// ##### Endpoints #####
 
-/* URI handler structure for GET /uri */
-httpd_uri_t uri_get = {
-    .uri = "/uri",
+httpd_uri_t uri_get_index_html = {
+    .uri = "/",
     .method = HTTP_GET,
-    .handler = get_handler,
+    .handler = get_index_html_handler,
     .user_ctx = NULL};
 
-/* URI handler structure for POST /uri */
-httpd_uri_t uri_post = {
-    .uri = "/uri",
-    .method = HTTP_POST,
-    .handler = post_handler,
+httpd_uri_t uri_get_bundle_js = {
+    .uri = "/bundle.js",
+    .method = HTTP_GET,
+    .handler = get_bundle_js_handler,
     .user_ctx = NULL};
 
 //**************************************************
 // Funtions
 //**************************************************
 
-/**
- * Starts the web server
- */
-bool web_server_start()
+esp_err_t web_server_initialize()
 {
-  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+  ESP_LOGE(TAG, "%s: Start", __func__);
 
-  if (httpd_start(&server, &config) != ESP_OK)
+  esp_err_t err = esp_event_loop_create_default();
+  if (err != ESP_OK && err != ESP_ERR_INVALID_STATE)
   {
-    return false;
+    ESP_LOGE(TAG, "%s: Fail to create default event loop", __func__);
+    return ESP_FAIL;
   }
 
-  httpd_register_uri_handler(server, &uri_get);
-  httpd_register_uri_handler(server, &uri_post);
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                      WIFI_EVENT_STA_DISCONNECTED,
+                                                      &wifi_event_handler,
+                                                      NULL,
+                                                      NULL));
 
-  ESP_LOGI(TAG, "server started");
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
+                                                      IP_EVENT_STA_GOT_IP,
+                                                      &wifi_event_handler,
+                                                      NULL,
+                                                      NULL));
 
-  return true;
-}
+  ESP_LOGE(TAG, "%s: Finish", __func__);
 
-/**
- * Stops the web server
- */
-void web_server_stop()
-{
-  if (server)
-  {
-    httpd_stop(server);
-    ESP_LOGI(TAG, "server stopped");
-  }
+  return ESP_OK;
 }
 
 //**************************************************
 // Static Functions
 //**************************************************
 
-/**
- * Get exemple
- */
-esp_err_t get_handler(httpd_req_t *req)
+static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-  ESP_LOGI(TAG, "get");
+  if (event_base == WIFI_EVENT)
+  {
+    switch (event_id)
+    {
+    case WIFI_EVENT_STA_DISCONNECTED:
+      stop();
+      break;
 
-  const char resp[] = "URI GET Response";
-  httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
-  return ESP_OK;
+    default:
+      break;
+    }
+  }
+
+  if (event_base == IP_EVENT)
+  {
+    switch (event_id)
+    {
+    case IP_EVENT_STA_GOT_IP:
+      start();
+      break;
+
+    default:
+      break;
+    }
+  }
 }
 
-/**
- * Post exemple
- */
-esp_err_t post_handler(httpd_req_t *req)
+static esp_err_t start()
 {
-  ESP_LOGI(TAG, "post");
+  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
-  /* Destination buffer for content of HTTP POST request.
-   * httpd_req_recv() accepts char* only, but content could
-   * as well be any binary data (needs type casting).
-   * In case of string data, null termination will be absent, and
-   * content length would give length of string */
-  char content[100];
-
-  /* Truncate if content length larger than the buffer */
-  size_t recv_size = MIN(req->content_len, sizeof(content));
-
-  int ret = httpd_req_recv(req, content, recv_size);
-  if (ret <= 0)
-  { /* 0 return value indicates connection closed */
-    /* Check if timeout occurred */
-    if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-    {
-      /* In case of timeout one can choose to retry calling
-       * httpd_req_recv(), but to keep it simple, here we
-       * respond with an HTTP 408 (Request Timeout) error */
-      httpd_resp_send_408(req);
-    }
-    /* In case of error, returning ESP_FAIL will
-     * ensure that the underlying socket is closed */
+  if (httpd_start(&server, &config) != ESP_OK)
+  {
     return ESP_FAIL;
   }
 
-  /* Send a simple response */
-  const char resp[] = "URI POST Response";
-  httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+  httpd_register_uri_handler(server, &uri_get_index_html);
+  httpd_register_uri_handler(server, &uri_get_bundle_js);
+
+  ESP_LOGI(TAG, "server started");
+
+  return ESP_OK;
+}
+
+static esp_err_t stop()
+{
+  if (server)
+  {
+    httpd_stop(server);
+    ESP_LOGI(TAG, "server stopped");
+  }
+  return ESP_OK;
+}
+
+static esp_err_t get_index_html_handler(httpd_req_t *req)
+{
+  httpd_resp_set_type(req, "text/html");
+  httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
+  return ESP_OK;
+}
+
+static esp_err_t get_bundle_js_handler(httpd_req_t *req)
+{
+  httpd_resp_set_type(req, "application/javascript");
+  httpd_resp_send(req, (const char *)bundle_js_start, bundle_js_end - bundle_js_start);
   return ESP_OK;
 }

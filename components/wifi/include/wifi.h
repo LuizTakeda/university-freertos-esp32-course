@@ -2,12 +2,8 @@
 #ifndef _WIFI_H
 #define _WIFI_H
 
-bool wifi_connect();
+#include "esp_err.h"
 
-void wifi_on_connection(void (*callback)(void));
-
-void wifi_on_disconnection(void (*callback)(void));
-
-char *wifi_get_ip();
+esp_err_t wifi_initialize();
 
 #endif

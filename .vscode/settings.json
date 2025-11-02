@@ -29,6 +29,7 @@
     "utility": "c",
     "variant": "c",
     "cstdint": "c",
-    "timers.h": "c"
+    "timers.h": "c",
+    "netfwd": "c"
   }
 }

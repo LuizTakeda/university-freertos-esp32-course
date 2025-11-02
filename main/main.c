@@ -9,14 +9,6 @@
 #include "examples.h"
 
 //**************************************************
-// Function Prototypes
-//**************************************************
-
-// static void on_wifi_connection();
-
-// static void on_wifi_disconnection();
-
-//**************************************************
 // Globals
 //**************************************************
 
@@ -28,41 +20,17 @@
 
 void app_main(void)
 {
-
-	// Initialize NVS
-	esp_err_t ret = nvs_flash_init();
-	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+	esp_err_t err = nvs_flash_init();
+	if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
 	{
 		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
+		ESP_ERROR_CHECK(nvs_flash_init());
 	}
-	ESP_ERROR_CHECK(ret);
 
-	esp_err_t err = examples_task();
-	// esp_err_t err = examples_software_timer();
-
-	/*
-	wifi_on_connection(on_wifi_connection);
-	wifi_on_disconnection(on_wifi_disconnection);
-
-	wifi_connect();
-	*/
+	ESP_ERROR_CHECK (wifi_initialize());
+	ESP_ERROR_CHECK (web_server_initialize());
 }
 
 //**************************************************
 // Static Functions
 //**************************************************
-/*
-static void on_wifi_connection()
-{
-	ESP_LOGI(TAG, "wifi connection");
-
-	web_server_start();
-}
-
-static void on_wifi_disconnection()
-{
-	ESP_LOGI(TAG, "wifi disconnection");
-	web_server_stop();
-}
-	*/
