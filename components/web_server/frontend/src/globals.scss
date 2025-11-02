@@ -47,8 +47,9 @@ button,
   font-weight: 600;
 }
 
-.out-grid{
+.digital-grid{
   display: grid;
   grid-template-columns: repeat(4,1fr);
   gap: 15px;
+  margin-bottom: 30px;
 }
