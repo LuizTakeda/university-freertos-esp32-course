@@ -27,11 +27,7 @@
         </dashboard-option>
         <dashboard-option target="analog">
           <icon-element name="tunning"></icon-element>
-          Analog
-        </dashboard-option>
-        <dashboard-option target="settings">
-          <icon-element name="settings"></icon-element>
-          Settings
+          Analog Input
         </dashboard-option>
       </dashboard-options>
 
@@ -62,13 +58,6 @@
       <!-- I/O Page -->
       <dashboard-page name="i/o">
         <h1 style="text-align: center;">Input/Output</h1>
-        <h2>Outputs</h2>
-        <div class="digital-grid">
-          <digital-output-element num="0"></digital-output-element>
-          <digital-output-element num="1"></digital-output-element>
-          <digital-output-element num="2"></digital-output-element>
-          <digital-output-element num="3"></digital-output-element>
-        </div>
 
         <h2>Inputs</h2>
         <div class="digital-grid">
@@ -77,17 +66,26 @@
           <digital-input-element num="2"></digital-input-element>
           <digital-input-element num="3"></digital-input-element>
         </div>
+
+        <h2>Outputs</h2>
+        <div class="digital-grid">
+          <digital-output-element num="0"></digital-output-element>
+          <digital-output-element num="1"></digital-output-element>
+          <digital-output-element num="2"></digital-output-element>
+          <digital-output-element num="3"></digital-output-element>
+        </div>
       </dashboard-page>
 
       <!-- Analog Page -->
       <dashboard-page name="analog">
-        <h1 style="text-align: center;">Analog</h1>
+        <h1 style="text-align: center;">Analog Inputs</h1>
+        <div class="analog-grid">
+          <analog-input-element num="0" min="0" max="4096">Analog 0</analog-input-element>
+          <analog-input-element name="Test1" num="1" min="0" max="50">Temperature</analog-input-element>
+          <analog-input-element name="Test1" num="2" min="0" max="100">Humidity</analog-input-element>
+        </div>
       </dashboard-page>
 
-      <!-- Settings Page -->
-      <dashboard-page name="settings">
-        <h1 style="text-align: center;">Settings</h1>
-      </dashboard-page>
     </dashboard-content>
   </dashboard-struct>
 
