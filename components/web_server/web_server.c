@@ -1,4 +1,5 @@
 #include "web_server.h"
+#include "web_server_internals.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -136,6 +137,8 @@ static esp_err_t start()
 
   httpd_register_uri_handler(server, &uri_get_index_html);
   httpd_register_uri_handler(server, &uri_get_bundle_js);
+
+  digital_output_register(server);
 
   ESP_LOGI(TAG, "server started");
 
