@@ -5,8 +5,12 @@
 
 #include "wifi.h"
 #include "web_server.h"
+#include "digital_output.h"
 
 #include "examples.h"
+
+#include <stdio.h>
+#include <string.h>
 
 //**************************************************
 // Globals
@@ -27,8 +31,9 @@ void app_main(void)
 		ESP_ERROR_CHECK(nvs_flash_init());
 	}
 
-	ESP_ERROR_CHECK (wifi_initialize());
-	ESP_ERROR_CHECK (web_server_initialize());
+	ESP_ERROR_CHECK(wifi_initialize());
+	ESP_ERROR_CHECK(web_server_initialize());
+	ESP_ERROR_CHECK(digital_output_initialize());
 }
 
 //**************************************************

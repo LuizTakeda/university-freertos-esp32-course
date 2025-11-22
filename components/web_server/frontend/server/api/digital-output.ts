@@ -4,21 +4,21 @@ const digitalOutputRouter = Router();
 
 const outputs = [false, false, false, false];
 
-digitalOutputRouter.post("/digital-output/:id", (request, response) => {
-  const { params, body } = request;
+digitalOutputRouter.post("/digital-output", (request, response) => {
+  const { body, query } = request;
   const { state } = body;
 
-  const id = Number(params.id);
+  const id = Number(query.id);
 
   outputs[id] = state;
 
   response.json({ state: outputs[id] });
 });
 
-digitalOutputRouter.get("/digital-output/:id", (request, response) => {
-  const { params } = request;
+digitalOutputRouter.get("/digital-output", (request, response) => {
+  const { query } = request;
 
-  const id = Number(params.id);
+  const id = Number(query.id);
 
   response.json({ state: outputs[id] });
 });

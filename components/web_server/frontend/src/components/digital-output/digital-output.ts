@@ -66,7 +66,7 @@ export default class DigitalOutputElement extends HTMLElement {
     this.state = "loading";
 
     try {
-      const result = await fetch(`/api/digital-output/${this.num}`);
+      const result = await fetch(`/api/digital-output?id=${this.num}`);
 
       if (!result.ok) {
         this.state = "error";
@@ -86,7 +86,7 @@ export default class DigitalOutputElement extends HTMLElement {
     this.state = "loading";
 
     try {
-      const result = await fetch(`/api/digital-output/${this.num}`, {
+      const result = await fetch(`/api/digital-output?id=${this.num}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

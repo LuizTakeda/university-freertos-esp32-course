@@ -1,8 +1,5 @@
-#ifndef _WEB_SERVER_H
-#define _WEB_SERVER_H
+#pragma once
 
 #include "esp_err.h"
 
 esp_err_t web_server_initialize();
-
-#endif

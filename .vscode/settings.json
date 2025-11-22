@@ -30,6 +30,8 @@
     "variant": "c",
     "cstdint": "c",
     "timers.h": "c",
-    "netfwd": "c"
+    "netfwd": "c",
+    "esp_lcd_panel_vendor.h": "c",
+    "cjson.h": "c"
   }
 }

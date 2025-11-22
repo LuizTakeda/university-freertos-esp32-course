@@ -31,8 +31,8 @@ if(NOT EXISTS ${FRONTEND_INDEX} OR NOT EXISTS ${FRONTEND_BUNDLE})
 endif()
 
 idf_component_register(
-  SRCS "web_server.c"
+  SRCS "web_server.c" "digital_output.c"
   INCLUDE_DIRS "include"
-  PRIV_REQUIRES esp_wifi esp_http_server
+  PRIV_REQUIRES esp_wifi esp_http_server digital_output json
   EMBED_FILES ./frontend/dist/index.html ./frontend/dist/bundle.js
 )
