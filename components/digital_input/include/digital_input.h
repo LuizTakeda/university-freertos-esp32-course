@@ -12,6 +12,7 @@ typedef enum
   DIGITAL_INPUT_NUM_2,
   DIGITAL_INPUT_NUM_3,
   DIGITAL_INPUT_NUM_4,
+  _DIGITAL_INPUT_NUM_MAX,
 } digital_input_num_t;
 
 typedef struct
