@@ -19,17 +19,19 @@ static esp_err_t post_digital_output_handler(httpd_req_t *req);
 
 const static char TAG[] = "web_server:digital_output";
 
-httpd_uri_t uri_get_digital_output = {
+static const httpd_uri_t s_uri_get_digital_output = {
     .uri = "/api/digital-output",
     .method = HTTP_GET,
     .handler = get_digital_output_handler,
-    .user_ctx = NULL};
+    .user_ctx = NULL,
+};
 
-httpd_uri_t uri_post_digital_output = {
+static const httpd_uri_t s_uri_post_digital_output = {
     .uri = "/api/digital-output",
     .method = HTTP_POST,
     .handler = post_digital_output_handler,
-    .user_ctx = NULL};
+    .user_ctx = NULL,
+};
 
 //**************************************************
 // Public Functions
@@ -37,8 +39,8 @@ httpd_uri_t uri_post_digital_output = {
 
 esp_err_t digital_output_register(httpd_handle_t server)
 {
-  httpd_register_uri_handler(server, &uri_get_digital_output);
-  httpd_register_uri_handler(server, &uri_post_digital_output);
+  httpd_register_uri_handler(server, &s_uri_get_digital_output);
+  httpd_register_uri_handler(server, &s_uri_post_digital_output);
 
   return ESP_OK;
 }

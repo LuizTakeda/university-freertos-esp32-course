@@ -18,7 +18,7 @@ static esp_err_t get_digital_input_handler(httpd_req_t *req);
 
 static const char TAG[] = "web_server:digital_input";
 
-static httpd_uri_t s_uri_get_digital_input = {
+static const httpd_uri_t s_uri_get_digital_input = {
     .uri = "/api/digital-input",
     .method = HTTP_GET,
     .user_ctx = NULL,

@@ -140,6 +140,7 @@ static esp_err_t start()
 
   digital_output_register(server);
   digital_input_register(server);
+  events_register(server);
 
   ESP_LOGI(TAG, "server started");
 
