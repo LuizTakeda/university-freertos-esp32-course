@@ -34,7 +34,7 @@ static void event_dispatcher_task(void *args);
 //**************************************************
 
 static const char TAG[] = "digital_input";
-static const uint32_t s_input_num_map[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_4};
+static const uint32_t s_input_num_map[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27};
 
 static event_node_t *s_first_node = NULL;
 static SemaphoreHandle_t s_node_mutex = NULL;
@@ -126,7 +126,7 @@ esp_err_t digital_input_add_event_handler(digital_input_event_handler_t handler)
   }
   else
   {
-    event_node_t *last_node = &s_first_node;
+    event_node_t *last_node = s_first_node;
     while (last_node->next != NULL)
     {
       last_node = last_node->next;
@@ -164,7 +164,7 @@ static void input_reader_task(void *args)
 
   while (true)
   {
-    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
+    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(250));
 
     if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(1000)) != pdTRUE)
     {
@@ -174,7 +174,7 @@ static void input_reader_task(void *args)
 
     for (uint16_t i = 0; i < _DIGITAL_INPUT_NUM_MAX; i++)
     {
-      bool level = gpio_get_level(s_input_num_map[i]);
+      bool level = !gpio_get_level(s_input_num_map[i]);
 
       if (((s_input_states >> i) & 0b1) == level)
       {
@@ -223,6 +223,8 @@ static void event_dispatcher_task(void *args)
       ESP_LOGE(TAG, "%s:Fail to take node mutex", __func__);
       continue;
     }
+
+    ESP_LOGI(TAG, "%s:Event num:%d state:%d",__func__, data.num, data.new_state);
 
     event_node_t *current_node = s_first_node;
 
