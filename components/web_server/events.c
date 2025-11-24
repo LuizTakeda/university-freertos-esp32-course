@@ -84,6 +84,7 @@ esp_err_t events_send(const event_t event)
 
 static void events_task()
 {
+  char buf[256] = "";
   event_t event;
 
   while (1)
@@ -99,6 +100,57 @@ static void events_task()
       continue;
     }
 
+    switch (event.name)
+    {
+    case EVENT_NAME_DIGITAL_INPUT:
+      sprintf(buf,
+              "event: digital-input\n"
+              "data: {\"num\":%d, \"value\":%d}\n\n",
+              event.payload.num, event.payload.value);
+      break;
+
+    default:
+      ESP_LOGE(TAG, "%s:Invalid event name", __func__);
+      goto end;
+    }
+
+    req_node_t *node = s_first_req_node;
+    while (node != NULL)
+    {
+      if (httpd_resp_send_chunk(node->req, buf, HTTPD_RESP_USE_STRLEN) != ESP_OK)
+      {
+        ESP_LOGE(TAG, "%s:Fail to send chunk", __func__);
+        req_node_t *invalid_node = node;
+
+        if (invalid_node->prev == NULL)
+        {
+          node = invalid_node->next;
+          if (node != NULL)
+          {
+            node->prev = NULL;
+          }
+          s_first_req_node = node;
+        }
+        else
+        {
+          node = invalid_node->next;
+          invalid_node->prev->next = node;
+          if (node != NULL)
+          {
+            node->prev = invalid_node->prev;
+          }
+        }
+
+        httpd_resp_send_chunk(invalid_node->req, NULL, 0);
+        httpd_req_async_handler_complete(invalid_node->req);
+        free(invalid_node);
+        continue;
+      }
+
+      node = node->next;
+    }
+
+  end:
     xSemaphoreGive(s_req_node_mutex);
   }
 
@@ -163,6 +215,7 @@ end:
 
   if (return_value != ESP_OK && async_req)
   {
+    httpd_resp_send_chunk(async_req, NULL, 0);
     httpd_req_async_handler_complete(async_req);
     httpd_resp_send_500(req);
   }
