@@ -22,7 +22,6 @@ typedef struct
 //**************************************************
 
 static void input_reader_task(void *args);
-
 static void event_dispatcher_task(void *args);
 
 //**************************************************
@@ -56,7 +55,7 @@ esp_err_t digital_input_initialize()
     return ESP_FAIL;
   }
 
-  if ((s_input_queue = xQueueCreate(10, sizeof(input_queue_data_t))) == NULL)
+  if ((s_input_queue = xQueueCreate(20, sizeof(input_queue_data_t))) == NULL)
   {
     ESP_LOGE(TAG, "%s:Fail to create input queue", __func__);
     return ESP_FAIL;
@@ -147,7 +146,45 @@ static void input_reader_task(void *args)
 
   while (true)
   {
-    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1000));
+    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
+
+    if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(1000)) != pdTRUE)
+    {
+      ESP_LOGE(TAG, "%s:Fail to take input states mutex", __func__);
+      continue;
+    }
+
+    for (uint16_t i = 0; i < _DIGITAL_INPUT_NUM_MAX; i++)
+    {
+      bool level = gpio_get_level(s_input_num_map[i]);
+
+      if (((s_input_states >> i) & 0b1) == level)
+      {
+        continue;
+      }
+
+      input_queue_data_t data = {
+          .num = i,
+          .new_state = level,
+      };
+
+      if (xQueueSend(s_input_queue, &data, pdMS_TO_TICKS(250)) != pdTRUE)
+      {
+        ESP_LOGE(TAG, "%s:Fail to send input data to queue", __func__);
+        continue;
+      }
+
+      if (level)
+      {
+        s_input_states |= 0b1 << i;
+      }
+      else
+      {
+        s_input_states &= ~(0b1 << i);
+      }
+    }
+
+    xSemaphoreGive(s_input_states_mutex);
   }
 
   vTaskDelete(NULL);
