@@ -47,7 +47,7 @@ export default class DigitalInputElement extends HTMLElement {
     this.state = "loading";
 
     try {
-      const result = await fetch(`/api/digital-input/${this.num}`);
+      const result = await fetch(`/api/digital-input?id=${this.num}`);
 
       if (!result.ok) {
         this.state = "error";

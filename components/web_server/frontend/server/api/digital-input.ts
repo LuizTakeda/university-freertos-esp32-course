@@ -4,21 +4,21 @@ const digitalInputRouter = Router();
 
 const inputs = [false, true, false, true];
 
-digitalInputRouter.post("/digital-input/:id", (request, response) => {
-  const { params, body } = request;
+digitalInputRouter.post("/digital-input", (request, response) => {
+  const { query, body } = request;
   const { state } = body;
 
-  const id = Number(params.id);
+  const id = Number(query.id);
 
   inputs[id] = state;
 
   response.json({ state: inputs[id] });
 });
 
-digitalInputRouter.get("/digital-input/:id", (request, response) => {
-  const { params } = request;
+digitalInputRouter.get("/digital-input", (request, response) => {
+  const { query } = request;
 
-  const id = Number(params.id);
+  const id = Number(query.id);
 
   response.json({ state: inputs[id] });
 });
