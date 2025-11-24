@@ -6,6 +6,7 @@
 #include "wifi.h"
 #include "web_server.h"
 #include "digital_output.h"
+#include "digital_input.h"
 
 #include "examples.h"
 
@@ -34,6 +35,7 @@ void app_main(void)
 	ESP_ERROR_CHECK(wifi_initialize());
 	ESP_ERROR_CHECK(web_server_initialize());
 	ESP_ERROR_CHECK(digital_output_initialize());
+	ESP_ERROR_CHECK(digital_input_initialize());
 }
 
 //**************************************************
