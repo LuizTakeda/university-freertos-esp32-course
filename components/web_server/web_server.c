@@ -139,6 +139,7 @@ static esp_err_t start()
   httpd_register_uri_handler(server, &uri_get_bundle_js);
 
   digital_output_register(server);
+  digital_input_register(server);
 
   ESP_LOGI(TAG, "server started");
 
