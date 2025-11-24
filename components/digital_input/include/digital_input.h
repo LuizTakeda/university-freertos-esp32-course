@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esp_err.h"
+#include "stdbool.h"
 
 //**************************************************
 // Typedefs
@@ -15,12 +16,7 @@ typedef enum
   _DIGITAL_INPUT_NUM_MAX,
 } digital_input_num_t;
 
-typedef struct
-{
-
-} digital_input_event_t;
-
-typedef void (*digital_input_event_handler_t)(digital_input_event_t);
+typedef void (*digital_input_event_handler_t)(const digital_input_num_t num, const bool state);
 
 typedef enum
 {
