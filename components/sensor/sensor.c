@@ -42,6 +42,12 @@ esp_err_t sensor_initialize()
     return ESP_FAIL;
   }
 
+  if (xTaskCreate(sensor_reader_task, "sensor_reader_task", 2048, NULL, 2, NULL) != pdPASS)
+  {
+    ESP_LOGE(TAG, "%s:Fail to create sensor reader task", __func__);
+    return ESP_FAIL;
+  }
+
   return ESP_OK;
 }
 
@@ -89,4 +95,34 @@ esp_err_t sensor_add_event_handler(sensor_event_handler_t handler)
 
 void sensor_reader_task()
 {
+  TickType_t last_wake_time = xTaskGetTickCount();
+
+  float temperature, humidity;
+  while (true)
+  {
+    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1500));
+
+    if (dht_read_float_data(DHT_TYPE_DHT11, GPIO_NUM_4, &humidity, &temperature) != ESP_OK)
+    {
+      ESP_LOGE(TAG, "%s:Fail to read sensor data", __func__);
+      continue;
+    }
+
+    if (xSemaphoreTake(s_event_node_mutex, portMAX_DELAY) != pdTRUE)
+    {
+      ESP_LOGE(TAG, "%s:Fail to take event node mutex", __func__);
+      continue;
+    }
+
+    event_node_t *node = s_first_event_node;
+    while (node != NULL)
+    {
+      node->handler(temperature, humidity);
+      node = node->next;
+    }
+
+    xSemaphoreGive(s_event_node_mutex);
+  }
+
+  vTaskDelete(NULL);
 }
