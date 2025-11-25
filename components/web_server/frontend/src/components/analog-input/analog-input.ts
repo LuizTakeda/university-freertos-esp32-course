@@ -132,6 +132,8 @@ export default class AnalogInputElement extends HTMLElement {
     if (this.path === null) {
       return;
     };
+
+    value = Number(((80 / 4096) * value).toFixed(0));
     const maxRecords = (this.MARGIN_RIGHT - this.MARGIN_LEFT) / this.STEPS;
     this.records = [value, ...this.records.slice(0, maxRecords)];
 
