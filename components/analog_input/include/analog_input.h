@@ -11,11 +11,10 @@ typedef enum
 {
   ANALOG_INPUT_NUM_1 = 0,
   ANALOG_INPUT_NUM_2,
-  ANALOG_INPUT_NUM_3,
   _ANALOG_INPUT_NUM_MAX,
 } analog_input_num_t;
 
-typedef void (*analog_input_event_handler_t)(const analog_input_num_t num, const bool state);
+typedef void (*analog_input_event_handler_t)(const analog_input_num_t num, const uint16_t value);
 
 //**************************************************
 // Function Prototypes
