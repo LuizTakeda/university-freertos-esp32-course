@@ -1,17 +1,12 @@
-#include <stdio.h>
-
 #include "nvs_flash.h"
 #include "esp_log.h"
-
 #include "wifi.h"
 #include "web_server.h"
 #include "digital_output.h"
 #include "digital_input.h"
+#include "analog_input.h"
 
 #include "examples.h"
-
-#include <stdio.h>
-#include <string.h>
 
 //**************************************************
 // Globals
@@ -36,6 +31,7 @@ void app_main(void)
 	ESP_ERROR_CHECK(web_server_initialize());
 	ESP_ERROR_CHECK(digital_output_initialize());
 	ESP_ERROR_CHECK(digital_input_initialize());
+	ESP_ERROR_CHECK(analog_input_initialize());
 }
 
 //**************************************************
