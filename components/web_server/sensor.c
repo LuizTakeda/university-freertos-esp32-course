@@ -1,43 +1,42 @@
 #include "web_server_internals.h"
-
 #include "esp_http_server.h"
 #include "esp_log.h"
-#include "analog_input.h"
+#include "sensor.h"
 
 //**************************************************
-// Functions Prototypes
+// Function Prototypes
 //**************************************************
 
-void analog_input_event_handler(const analog_input_num_t num, const uint16_t value);
+static void sensor_event_handler(float humidty, float temperature);
 
 //**************************************************
 // Globals
 //**************************************************
 
-static const char TAG[] = "web_server:analog_input";
+static const char TAG[] = "web_server:sensor";
 
 //**************************************************
 // Public Functions
 //**************************************************
 
-esp_err_t analog_input_register(httpd_handle_t server)
+esp_err_t sensor_register(httpd_handle_t server)
 {
-  ESP_ERROR_CHECK(analog_input_add_event_handler(analog_input_event_handler));
+  ESP_ERROR_CHECK(sensor_add_event_handler(sensor_event_handler));
 
-  return ESP_OK;
+  return ESP_FAIL;
 }
 
 //**************************************************
 // Static Functions
 //**************************************************
 
-void analog_input_event_handler(const analog_input_num_t num, const uint16_t value)
+static void sensor_event_handler(float humidty, float temperature)
 {
   event_t event = {
-      .name = EVENT_NAME_ANALOG_INPUT,
-      .payload.analog_input = {
-          .num = num,
-          .value = value,
+      .name = EVENT_NAME_SENSOR,
+      .payload.sensor = {
+          .humidty = humidty,
+          .temperature = temperature,
       },
   };
 
