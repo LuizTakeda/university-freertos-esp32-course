@@ -66,7 +66,7 @@ esp_err_t events_register(httpd_handle_t server)
     return ESP_FAIL;
   }
 
-  xTaskCreate(events_task, "events_task", 2048, NULL, 3, NULL);
+  xTaskCreate(events_task, "events_task", 4096, NULL, 3, NULL);
 
   ESP_ERROR_CHECK(httpd_register_uri_handler(server, &s_uri_get_events));
 
@@ -106,7 +106,7 @@ static void events_task()
       sprintf(buf,
               "event: digital-input\n"
               "data: {\"num\":%d, \"value\":%d}\n\n",
-              event.payload.num, event.payload.value);
+              event.payload.digital_input.num, event.payload.digital_input.value);
       break;
 
     default:
@@ -117,6 +117,8 @@ static void events_task()
     req_node_t *node = s_first_req_node;
     while (node != NULL)
     {
+      ESP_LOGI(TAG, "%s:Sending chunk \n%s", __func__, buf);
+
       if (httpd_resp_send_chunk(node->req, buf, HTTPD_RESP_USE_STRLEN) != ESP_OK)
       {
         ESP_LOGE(TAG, "%s:Fail to send chunk", __func__);
@@ -164,7 +166,7 @@ static esp_err_t events_handler(httpd_req_t *req)
   req_node_t *new_node = NULL;
 
   httpd_resp_set_type(req, "text/event-stream");
-  httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-cache, no-transform");
   httpd_resp_set_hdr(req, "Connection", "keep-alive");
 
   if (httpd_req_async_handler_begin(req, &async_req) != ESP_OK)

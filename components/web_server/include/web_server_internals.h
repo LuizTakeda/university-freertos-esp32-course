@@ -3,16 +3,22 @@
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "stdbool.h"
+#include "digital_input.h"
 
 typedef enum
 {
   EVENT_NAME_DIGITAL_INPUT = 0,
 } event_name_t;
 
+typedef struct
+{
+  digital_input_num_t num;
+  bool value;
+} digital_input_payload_t;
+
 typedef union
 {
-  uint16_t num;
-  bool value;
+  digital_input_payload_t digital_input;
 } event_payload_t;
 
 typedef struct

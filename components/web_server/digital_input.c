@@ -12,6 +12,8 @@
 
 static esp_err_t get_digital_input_handler(httpd_req_t *req);
 
+static void input_event_handler(const digital_input_num_t num, const bool state);
+
 //**************************************************
 // Globals
 //**************************************************
@@ -32,6 +34,8 @@ static const httpd_uri_t s_uri_get_digital_input = {
 esp_err_t digital_input_register(httpd_handle_t server)
 {
   ESP_ERROR_CHECK(httpd_register_uri_handler(server, &s_uri_get_digital_input));
+
+  ESP_ERROR_CHECK(digital_input_add_event_handler(input_event_handler));
 
   return ESP_OK;
 }
@@ -105,4 +109,17 @@ end:
   }
 
   return return_value;
+}
+
+static void input_event_handler(const digital_input_num_t num, const bool state)
+{
+  event_t event = {
+      .name = EVENT_NAME_DIGITAL_INPUT,
+      .payload.digital_input = {
+          .num = num,
+          .value = state,
+      },
+  };
+
+  events_send(event);
 }
