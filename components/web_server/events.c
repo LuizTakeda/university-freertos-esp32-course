@@ -109,6 +109,13 @@ static void events_task()
               event.payload.digital_input.num, event.payload.digital_input.value);
       break;
 
+    case EVENT_NAME_ANALOG_INPUT:
+      sprintf(buf,
+              "event: analog-input\n"
+              "data: {\"num\":%d, \"value\":%d}\n\n",
+              event.payload.analog_input.num, event.payload.analog_input.value);
+      break;
+
     default:
       ESP_LOGE(TAG, "%s:Invalid event name", __func__);
       goto end;
@@ -117,7 +124,7 @@ static void events_task()
     req_node_t *node = s_first_req_node;
     while (node != NULL)
     {
-      ESP_LOGI(TAG, "%s:Sending chunk \n%s", __func__, buf);
+      //ESP_LOGI(TAG, "%s:Sending chunk \n", __func__);
 
       if (httpd_resp_send_chunk(node->req, buf, HTTPD_RESP_USE_STRLEN) != ESP_OK)
       {

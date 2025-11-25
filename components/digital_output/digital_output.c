@@ -19,7 +19,7 @@ esp_err_t digital_output_initialize()
 {
   gpio_config_t io_conf = {};
   io_conf.intr_type = GPIO_INTR_DISABLE;
-  io_conf.mode = GPIO_MODE_OUTPUT;
+  io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
   io_conf.pin_bit_mask = (1ULL << DIGITAL_OUTPUT_NUM_1) |
                          (1ULL << DIGITAL_OUTPUT_NUM_2) |
                          (1ULL << DIGITAL_OUTPUT_NUM_3) |
