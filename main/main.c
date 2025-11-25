@@ -5,6 +5,7 @@
 #include "digital_output.h"
 #include "digital_input.h"
 #include "analog_input.h"
+#include "sensor.h"
 
 #include "examples.h"
 
@@ -32,6 +33,7 @@ void app_main(void)
 	ESP_ERROR_CHECK(digital_output_initialize());
 	ESP_ERROR_CHECK(digital_input_initialize());
 	ESP_ERROR_CHECK(analog_input_initialize());
+	ESP_ERROR_CHECK(sensor_initialize());
 }
 
 //**************************************************
