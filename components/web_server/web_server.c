@@ -67,7 +67,7 @@ httpd_uri_t uri_get_bundle_js = {
 
 esp_err_t web_server_initialize()
 {
-  ESP_LOGE(TAG, "%s: Start", __func__);
+  ESP_LOGI(TAG, "%s: Start", __func__);
 
   esp_err_t err = esp_event_loop_create_default();
   if (err != ESP_OK && err != ESP_ERR_INVALID_STATE)
@@ -88,7 +88,7 @@ esp_err_t web_server_initialize()
                                                       NULL,
                                                       NULL));
 
-  ESP_LOGE(TAG, "%s: Finish", __func__);
+  ESP_LOGI(TAG, "%s: Finish", __func__);
 
   return ESP_OK;
 }
@@ -142,6 +142,7 @@ static esp_err_t start()
   digital_input_register(server);
   events_register(server);
   analog_input_register(server);
+  sensor_register(server);
 
   ESP_LOGI(TAG, "server started");
 

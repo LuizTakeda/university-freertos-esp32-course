@@ -73,9 +73,9 @@ esp_err_t events_register(httpd_handle_t server)
   return ESP_OK;
 }
 
-esp_err_t events_send(const event_t event)
+esp_err_t events_send(event_t *event)
 {
-  return xQueueSend(s_events_queue, &event, pdMS_TO_TICKS(250));
+  return xQueueSend(s_events_queue, event, pdMS_TO_TICKS(250)) == pdTRUE ? ESP_OK : ESP_FAIL;
 }
 
 //**************************************************
@@ -84,7 +84,7 @@ esp_err_t events_send(const event_t event)
 
 static void events_task()
 {
-  char buf[256] = "";
+  static char buf[256] = "";
   event_t event;
 
   while (1)
@@ -116,6 +116,16 @@ static void events_task()
               event.payload.analog_input.num, event.payload.analog_input.value);
       break;
 
+    case EVENT_NAME_SENSOR:
+      sprintf(buf,
+              "event: analog-input\n"
+              "data: {\"num\":%d, \"value\":%f}\n\n"
+              "event: analog-input\n"
+              "data: {\"num\":%d, \"value\":%f}\n\n",
+              2, event.payload.sensor.temperature,
+              3, event.payload.sensor.humidity);
+      break;
+
     default:
       ESP_LOGE(TAG, "%s:Invalid event name", __func__);
       goto end;
@@ -124,8 +134,6 @@ static void events_task()
     req_node_t *node = s_first_req_node;
     while (node != NULL)
     {
-      //ESP_LOGI(TAG, "%s:Sending chunk \n", __func__);
-
       if (httpd_resp_send_chunk(node->req, buf, HTTPD_RESP_USE_STRLEN) != ESP_OK)
       {
         ESP_LOGE(TAG, "%s:Fail to send chunk", __func__);

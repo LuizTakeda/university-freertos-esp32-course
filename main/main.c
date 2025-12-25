@@ -5,18 +5,7 @@
 #include "digital_output.h"
 #include "digital_input.h"
 #include "analog_input.h"
-
-#include "examples.h"
-
-//**************************************************
-// Globals
-//**************************************************
-
-// static const char TAG[] = "main";
-
-//**************************************************
-// Functions
-//**************************************************
+#include "sensor.h"
 
 void app_main(void)
 {
@@ -32,8 +21,5 @@ void app_main(void)
 	ESP_ERROR_CHECK(digital_output_initialize());
 	ESP_ERROR_CHECK(digital_input_initialize());
 	ESP_ERROR_CHECK(analog_input_initialize());
+	ESP_ERROR_CHECK(sensor_initialize());
 }
-
-//**************************************************
-// Static Functions
-//**************************************************
