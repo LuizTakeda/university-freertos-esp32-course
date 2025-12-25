@@ -85,7 +85,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     switch (event_id)
     {
     case WIFI_EVENT_STA_START:
-      ESP_LOGI(TAG, "wifi coonect");
+      ESP_LOGI(TAG, "wifi connect");
       esp_wifi_connect();
       break;
 

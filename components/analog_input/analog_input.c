@@ -72,7 +72,7 @@ esp_err_t analog_input_initialize(void)
   {
     if (adc_oneshot_config_channel(s_adc1_handler, s_analog_input_num_map[i], &config) != ESP_OK)
     {
-      ESP_LOGE(TAG, "%s:Fail to confi channel %d", __func__, i);
+      ESP_LOGE(TAG, "%s:Fail to config channel %d", __func__, i);
       return ESP_FAIL;
     }
   }

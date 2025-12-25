@@ -121,7 +121,7 @@ static void input_event_handler(const digital_input_num_t num, const bool state)
       },
   };
 
-  if (events_send(event) != ESP_OK)
+  if (events_send(&event) != ESP_OK)
   {
     ESP_LOGE(TAG, "%s:Fail to send event", __func__);
   }

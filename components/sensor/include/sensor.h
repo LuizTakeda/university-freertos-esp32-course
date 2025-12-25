@@ -6,7 +6,7 @@
 // Typedefs
 //**************************************************
 
-typedef void (*sensor_event_handler_t)(float humidty, float temperature);
+typedef void (*sensor_event_handler_t)(float humidity, float temperature);
 
 //**************************************************
 // Public Functions

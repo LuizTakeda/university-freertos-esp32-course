@@ -42,7 +42,7 @@ esp_err_t sensor_initialize()
     return ESP_FAIL;
   }
 
-  if (xTaskCreate(sensor_reader_task, "sensor_reader_task", 2048, NULL, 2, NULL) != pdPASS)
+  if (xTaskCreate(sensor_reader_task, "sensor_reader_task", 4096, NULL, 2, NULL) != pdPASS)
   {
     ESP_LOGE(TAG, "%s:Fail to create sensor reader task", __func__);
     return ESP_FAIL;
@@ -108,6 +108,8 @@ void sensor_reader_task()
       continue;
     }
 
+    ESP_LOGI(TAG, "%s:Humidity(%f) Temperature(%f)", __func__, humidity, temperature);
+
     if (xSemaphoreTake(s_event_node_mutex, portMAX_DELAY) != pdTRUE)
     {
       ESP_LOGE(TAG, "%s:Fail to take event node mutex", __func__);
@@ -117,7 +119,7 @@ void sensor_reader_task()
     event_node_t *node = s_first_event_node;
     while (node != NULL)
     {
-      node->handler(temperature, humidity);
+      node->handler(humidity, temperature);
       node = node->next;
     }
 

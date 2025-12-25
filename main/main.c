@@ -7,18 +7,6 @@
 #include "analog_input.h"
 #include "sensor.h"
 
-#include "examples.h"
-
-//**************************************************
-// Globals
-//**************************************************
-
-// static const char TAG[] = "main";
-
-//**************************************************
-// Functions
-//**************************************************
-
 void app_main(void)
 {
 	esp_err_t err = nvs_flash_init();
@@ -35,7 +23,3 @@ void app_main(void)
 	ESP_ERROR_CHECK(analog_input_initialize());
 	ESP_ERROR_CHECK(sensor_initialize());
 }
-
-//**************************************************
-// Static Functions
-//**************************************************

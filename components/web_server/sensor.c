@@ -30,17 +30,17 @@ esp_err_t sensor_register(httpd_handle_t server)
 // Static Functions
 //**************************************************
 
-static void sensor_event_handler(float humidty, float temperature)
+static void sensor_event_handler(float humidity, float temperature)
 {
   event_t event = {
       .name = EVENT_NAME_SENSOR,
       .payload.sensor = {
-          .humidty = humidty,
+          .humidity = humidity,
           .temperature = temperature,
       },
   };
 
-  if (events_send(event) != ESP_OK)
+  if (events_send(&event) != ESP_OK)
   {
     ESP_LOGE(TAG, "%s:Fail to send event", __func__);
   }

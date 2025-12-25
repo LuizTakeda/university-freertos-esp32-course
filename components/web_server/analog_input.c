@@ -41,7 +41,7 @@ void analog_input_event_handler(const analog_input_num_t num, const uint16_t val
       },
   };
 
-  if (events_send(event) != ESP_OK)
+  if (events_send(&event) != ESP_OK)
   {
     ESP_LOGE(TAG, "%s:Fail to send event", __func__);
   }

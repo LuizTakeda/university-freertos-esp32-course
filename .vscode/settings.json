@@ -33,6 +33,7 @@
     "netfwd": "c",
     "esp_lcd_panel_vendor.h": "c",
     "cjson.h": "c",
-    "digital_input.h": "c"
+    "digital_input.h": "c",
+    "freertos.h": "c"
   }
 }
