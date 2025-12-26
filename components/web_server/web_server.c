@@ -141,7 +141,12 @@ static esp_err_t start()
   digital_output_register(server);
   digital_input_register(server);
   events_register(server);
-  analog_input_register(server);
+
+  if (analog_input_register(server) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Analog Input is unavailable", __func__);
+  }
+
   sensor_register(server);
 
   ESP_LOGI(TAG, "server started");
