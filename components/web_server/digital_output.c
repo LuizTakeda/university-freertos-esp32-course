@@ -111,7 +111,7 @@ static esp_err_t get_digital_output_handler(httpd_req_t *req)
     goto end;
   }
 
-  if (state == DIGITAL_OUTPUT_FAIL)
+  if (state == DIGITAL_OUTPUT_INVALID_ARG)
   {
     ESP_LOGE(TAG, "%s:Fail to get output state", __func__);
     httpd_resp_send_500(req);

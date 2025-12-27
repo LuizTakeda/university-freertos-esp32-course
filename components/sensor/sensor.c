@@ -6,9 +6,20 @@
 #include <dht.h>
 
 //**************************************************
+// Defines
+//**************************************************
+
+#define SENSOR_GPIO GPIO_NUM_4
+#define SENSOR_TYPE DHT_TYPE_DHT11
+#define SENSOR_POLL_RATE 1500 // ms
+
+//**************************************************
 // Typedefs
 //**************************************************
 
+/**
+ * @brief Linked list node representing a sensor data observer
+ */
 typedef struct event_node_t
 {
   struct event_node_t *next;
@@ -21,14 +32,18 @@ typedef struct event_node_t
 
 void sensor_reader_task();
 
+static esp_err_t is_handler_present(event_node_t *head, sensor_event_handler_t handler);
+static esp_err_t add_node(event_node_t **head, sensor_event_handler_t handler);
+static esp_err_t foreach_node(event_node_t *head, float humidity, float temperature);
+
 //**************************************************
 // Globals
 //**************************************************
 
 static const char TAG[] = "sensor";
 
-static event_node_t *s_first_event_node = NULL;
-static SemaphoreHandle_t s_event_node_mutex = NULL;
+static event_node_t *s_first_event_node = NULL;     /**< Head of the linked list of handlers */
+static SemaphoreHandle_t s_event_node_mutex = NULL; /**< Mutex to protect list during concurrent access */
 
 //**************************************************
 // Public Functions
@@ -36,12 +51,14 @@ static SemaphoreHandle_t s_event_node_mutex = NULL;
 
 esp_err_t sensor_initialize()
 {
+  // Initialize list protection
   if ((s_event_node_mutex = xSemaphoreCreateMutex()) == NULL)
   {
     ESP_LOGE(TAG, "%s:Fail to create event node mutex", __func__);
     return ESP_FAIL;
   }
 
+  // Spawn the periodic sampling task (Higher stack for float operations)
   if (xTaskCreate(sensor_reader_task, "sensor_reader_task", 4096, NULL, 2, NULL) != pdPASS)
   {
     ESP_LOGE(TAG, "%s:Fail to create sensor reader task", __func__);
@@ -53,46 +70,27 @@ esp_err_t sensor_initialize()
 
 esp_err_t sensor_add_event_handler(sensor_event_handler_t handler)
 {
-  event_node_t *new_node = malloc(sizeof(event_node_t));
-  if (new_node == NULL)
-  {
-    ESP_LOGE(TAG, "%s:Fail to alloc event node", __func__);
-    return ESP_FAIL;
-  }
-
-  new_node->handler = handler;
-  new_node->next = NULL;
-
+  // Secure the list modification
   if (xSemaphoreTake(s_event_node_mutex, portMAX_DELAY) != pdTRUE)
   {
     ESP_LOGE(TAG, "%s:Fail to take event node mutex", __func__);
-    free(new_node);
     return ESP_FAIL;
   }
 
-  if (s_first_event_node == NULL)
-  {
-    s_first_event_node = new_node;
-  }
-  else
-  {
-    event_node_t *last_node = s_first_event_node;
-    while (last_node->next != NULL)
-    {
-      last_node = last_node->next;
-    }
-    last_node->next = new_node;
-  }
+  esp_err_t err = add_node(&s_first_event_node, handler);
 
   xSemaphoreGive(s_event_node_mutex);
 
-  return ESP_OK;
+  return err;
 }
 
 //**************************************************
 // Static Functions
 //**************************************************
 
+/**
+ * @brief Background task responsible for sampling DHT data and notifying handlers.
+ */
 void sensor_reader_task()
 {
   TickType_t last_wake_time = xTaskGetTickCount();
@@ -100,31 +98,84 @@ void sensor_reader_task()
   float temperature, humidity;
   while (true)
   {
-    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1500));
+    // Enforce periodic execution
+    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(SENSOR_POLL_RATE));
 
-    if (dht_read_float_data(DHT_TYPE_DHT11, GPIO_NUM_4, &humidity, &temperature) != ESP_OK)
+    // Perform hardware read
+    if (dht_read_float_data(SENSOR_TYPE, SENSOR_GPIO, &humidity, &temperature) != ESP_OK)
     {
       ESP_LOGE(TAG, "%s:Fail to read sensor data", __func__);
       continue;
     }
 
-    ESP_LOGI(TAG, "%s:Humidity(%f) Temperature(%f)", __func__, humidity, temperature);
-
-    if (xSemaphoreTake(s_event_node_mutex, portMAX_DELAY) != pdTRUE)
+    // Notify all observers in a thread-safe manner
+    if (xSemaphoreTake(s_event_node_mutex, portMAX_DELAY) == pdTRUE)
     {
-      ESP_LOGE(TAG, "%s:Fail to take event node mutex", __func__);
-      continue;
+      foreach_node(s_first_event_node, humidity, temperature);
+      xSemaphoreGive(s_event_node_mutex);
     }
-
-    event_node_t *node = s_first_event_node;
-    while (node != NULL)
-    {
-      node->handler(humidity, temperature);
-      node = node->next;
-    }
-
-    xSemaphoreGive(s_event_node_mutex);
   }
 
   vTaskDelete(NULL);
+}
+
+/**
+ * @brief Search for a specific handler in the list to avoid duplicate entries.
+ * @return ESP_OK if found, ESP_FAIL otherwise.
+ */
+static esp_err_t is_handler_present(event_node_t *head, sensor_event_handler_t handler)
+{
+  event_node_t *current = head;
+  while (current != NULL)
+  {
+    if (current->handler == handler)
+    {
+      return ESP_OK;
+    }
+    current = current->next;
+  }
+  return ESP_FAIL;
+}
+
+/**
+ * @brief Allocates and inserts a new node at the head of the list (LIFO).
+ */
+static esp_err_t add_node(event_node_t **head, sensor_event_handler_t handler)
+{
+  // Check if handler already exists in the list
+  if (is_handler_present(*head, handler) == ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Handler is already present", __func__);
+    return ESP_OK;
+  }
+
+  event_node_t *new_node = malloc(sizeof(event_node_t));
+  if (new_node == NULL)
+  {
+    ESP_LOGE(TAG, "%s:Fail to alloc new node", __func__);
+    return ESP_ERR_NO_MEM;
+  }
+
+  new_node->handler = handler;
+  new_node->next = *head;
+  *head = new_node;
+  return ESP_OK;
+}
+
+/**
+ * @brief Traverses the list and executes each registered handler callback.
+ */
+static esp_err_t foreach_node(event_node_t *head, float humidity, float temperature)
+{
+  event_node_t *current = head;
+  while (current != NULL)
+  {
+    if (current->handler != NULL)
+    {
+      current->handler(humidity, temperature);
+    }
+    current = current->next;
+  }
+
+  return ESP_OK;
 }
