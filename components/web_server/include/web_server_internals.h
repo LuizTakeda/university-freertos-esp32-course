@@ -68,4 +68,12 @@ esp_err_t events_send(event_t *event);
  */
 esp_err_t analog_input_register(httpd_handle_t server);
 
+/**
+ * @brief Subscribes the web server to environment sensor updates.
+ * @param server Handle to the running HTTP server instance.
+ * @return 
+ * - ESP_OK: Successfully registered as a sensor observer.
+ * 
+ * - ESP_FAIL: Failed to register the event handler.
+ */
 esp_err_t sensor_register(httpd_handle_t server);
