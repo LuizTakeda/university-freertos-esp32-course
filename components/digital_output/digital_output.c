@@ -9,7 +9,14 @@
 
 static const char TAG[] = "digital_output";
 
-SemaphoreHandle_t s_mutex = NULL;
+/**
+ * @brief Map logical output IDs to physical GPIO numbers
+ */
+static const uint32_t s_output_pins[_DIGITAL_OUTPUT_NUM_MAX] = {
+    GPIO_NUM_13,
+    GPIO_NUM_19,
+    GPIO_NUM_21,
+    GPIO_NUM_18};
 
 //**************************************************
 // Public Functions
@@ -17,66 +24,51 @@ SemaphoreHandle_t s_mutex = NULL;
 
 esp_err_t digital_output_initialize()
 {
-  gpio_config_t io_conf = {};
-  io_conf.intr_type = GPIO_INTR_DISABLE;
-  io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
-  io_conf.pin_bit_mask = (1ULL << DIGITAL_OUTPUT_NUM_1) |
-                         (1ULL << DIGITAL_OUTPUT_NUM_2) |
-                         (1ULL << DIGITAL_OUTPUT_NUM_3) |
-                         (1ULL << DIGITAL_OUTPUT_NUM_4);
-  io_conf.pull_down_en = 0;
-  io_conf.pull_up_en = 0;
+  // Initialize GPIOs as Output and Input (to allow reading state back)
+  gpio_config_t io_conf = {
+      .intr_type = GPIO_INTR_DISABLE,
+      .mode = GPIO_MODE_INPUT_OUTPUT,
+      .pull_down_en = GPIO_PULLDOWN_DISABLE,
+      .pull_up_en = GPIO_PULLUP_DISABLE,
+      .pin_bit_mask = 0};
+
+  // Build bit mask from the pin map
+  for (int i = 0; i < _DIGITAL_OUTPUT_NUM_MAX; i++)
+  {
+    io_conf.pin_bit_mask |= (1ULL << s_output_pins[i]);
+  }
 
   if (gpio_config(&io_conf) != ESP_OK)
   {
-    ESP_LOGE(TAG, "%s:Fail to configure gpio", __func__);
+    ESP_LOGE(TAG, "Failed to configure GPIOs");
     return ESP_FAIL;
   }
 
-  if ((s_mutex = xSemaphoreCreateMutex()) == NULL)
+  // Set all low
+  for (int i = 0; i < _DIGITAL_OUTPUT_NUM_MAX; i++)
   {
-    ESP_LOGE(TAG, "%s:Fail to create mutex", __func__);
-    return ESP_FAIL;
+    gpio_set_level(s_output_pins[i], 0);
   }
 
-  ESP_LOGI(TAG, "%s:Finished", __func__);
   return ESP_OK;
 }
 
 digital_output_state_t digital_output_get_state(digital_output_num_t num)
 {
-  if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) != pdPASS)
+  if (num >= _DIGITAL_OUTPUT_NUM_MAX)
   {
-    return DIGITAL_OUTPUT_FAIL;
+    return DIGITAL_OUTPUT_INVALID_ARG;
   }
 
-  bool state = gpio_get_level(num);
-
-  xSemaphoreGive(s_mutex);
-  return state ? DIGITAL_OUTPUT_ON : DIGITAL_OUTPUT_OFF;
+  return gpio_get_level(s_output_pins[num]) ? DIGITAL_OUTPUT_ON : DIGITAL_OUTPUT_OFF;
 }
 
 esp_err_t digital_output_set_state(digital_output_num_t num, bool new_state)
 {
-  if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) != pdPASS)
+  if (num >= _DIGITAL_OUTPUT_NUM_MAX)
   {
-    return ESP_FAIL;
+    return ESP_ERR_INVALID_ARG;
   }
 
-  esp_err_t return_value = ESP_FAIL;
-
-  if (gpio_set_level(num, new_state) != ESP_OK)
-  {
-    goto end;
-  }
-
-  return_value = ESP_OK;
-
-end:
-  xSemaphoreGive(s_mutex);
-  return return_value;
+  return gpio_set_level(s_output_pins[num], new_state);
 }
-
-//**************************************************
-// Static Functions
-//**************************************************

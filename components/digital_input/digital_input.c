@@ -7,15 +7,29 @@
 #include "driver/gpio.h"
 
 //**************************************************
+// Defines
+//**************************************************
+
+#define GET_BIT(val, bit) (((val) >> (bit)) & 0x01)
+#define SET_BIT(val, bit) ((val) |= (1U << (bit)))
+#define CLEAR_BIT(val, bit) ((val) &= ~(1U << (bit)))
+
+//**************************************************
 // Typedefs
 //**************************************************
 
+/**
+ * @brief Linked list node for digital input event observers
+ */
 typedef struct event_node_t
 {
-  digital_input_event_handler_t event_handler;
+  digital_input_event_handler_t handler;
   struct event_node_t *next;
 } event_node_t;
 
+/**
+ * @brief Structure for queueing input state change events
+ */
 typedef struct
 {
   digital_input_num_t num;
@@ -29,18 +43,26 @@ typedef struct
 static void input_reader_task(void *args);
 static void event_dispatcher_task(void *args);
 
+static esp_err_t is_handler_present(event_node_t *head, digital_input_event_handler_t handler);
+static esp_err_t add_node(event_node_t **head, digital_input_event_handler_t handler);
+static esp_err_t foreach_node(event_node_t *head, const digital_input_num_t num, const bool state);
+
 //**************************************************
 // Globals
 //**************************************************
 
 static const char TAG[] = "digital_input";
+
+/**
+ * @brief Physical GPIO mapping for logical inputs
+ */
 static const uint32_t s_input_num_map[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27};
 
-static event_node_t *s_first_node = NULL;
-static SemaphoreHandle_t s_node_mutex = NULL;
-static SemaphoreHandle_t s_input_states_mutex = NULL;
-static QueueHandle_t s_input_queue = NULL;
-static uint16_t s_input_states = 0;
+static event_node_t *s_first_node = NULL;             /**< Head of the observer list */
+static SemaphoreHandle_t s_node_mutex = NULL;         /**< Protection for the observer list */
+static SemaphoreHandle_t s_input_states_mutex = NULL; /**< Protection for the bitmask state */
+static QueueHandle_t s_input_queue = NULL;            /**< Inter-task communication queue */
+static uint16_t s_input_states = 0;                   /**< Bitmask of current input levels */
 
 //**************************************************
 // Public Funtions
@@ -48,6 +70,7 @@ static uint16_t s_input_states = 0;
 
 esp_err_t digital_input_initialize()
 {
+  // Create synchronization primitives
   if ((s_node_mutex = xSemaphoreCreateMutex()) == NULL)
   {
     ESP_LOGE(TAG, "%s:Fail to create node mutex", __func__);
@@ -60,24 +83,28 @@ esp_err_t digital_input_initialize()
     return ESP_FAIL;
   }
 
+  // Initialize the event queue
   if ((s_input_queue = xQueueCreate(20, sizeof(input_queue_data_t))) == NULL)
   {
     ESP_LOGE(TAG, "%s:Fail to create input queue", __func__);
     return ESP_FAIL;
   }
 
+  // Create the Producer task (Hardware polling)
   if (xTaskCreate(input_reader_task, "input_reader_task", 2048, NULL, 1, NULL) != pdPASS)
   {
     ESP_LOGE(TAG, "%s:Fail to create input reader task", __func__);
     return ESP_FAIL;
   }
 
+  // Create the Consumer task (Event dispatching)
   if (xTaskCreate(event_dispatcher_task, "event_dispatcher_task", 2048, NULL, 2, NULL) != pdPASS)
   {
     ESP_LOGE(TAG, "%s:Fail to create event dispatcher task", __func__);
     return ESP_FAIL;
   }
 
+  // Hardware configuration: Inputs with Internal Pull-up
   gpio_config_t io_conf = {
       .intr_type = GPIO_INTR_DISABLE,
       .mode = GPIO_MODE_INPUT,
@@ -102,52 +129,27 @@ esp_err_t digital_input_initialize()
 
 esp_err_t digital_input_add_event_handler(digital_input_event_handler_t handler)
 {
-  event_node_t *new_node = malloc(sizeof(event_node_t));
-
-  if (new_node == NULL)
+  if (xSemaphoreTake(s_node_mutex, portMAX_DELAY) != pdTRUE)
   {
-    ESP_LOGE(TAG, "%s:Fail to alloc new node", __func__);
     return ESP_FAIL;
   }
 
-  new_node->event_handler = handler;
-  new_node->next = NULL;
-
-  if (xSemaphoreTake(s_node_mutex, pdMS_TO_TICKS(1000)) != pdTRUE)
-  {
-    ESP_LOGE(TAG, "%s:Fail to take node mutex", __func__);
-    free(new_node);
-    return ESP_FAIL;
-  }
-
-  if (s_first_node == NULL)
-  {
-    s_first_node = new_node;
-  }
-  else
-  {
-    event_node_t *last_node = s_first_node;
-    while (last_node->next != NULL)
-    {
-      last_node = last_node->next;
-    }
-    last_node->next = new_node;
-  }
+  esp_err_t err = add_node(&s_first_node, handler);
 
   xSemaphoreGive(s_node_mutex);
 
-  return ESP_OK;
+  return err;
 }
 
 digital_input_state_t digital_input_get_state(digital_input_num_t num)
 {
-  if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(1000)) != pdTRUE)
+  if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(100)) != pdTRUE)
   {
     ESP_LOGE(TAG, "%s:Fail to take input states mutex", __func__);
     return DIGITAL_INPUT_STATE_FAIL;
   }
 
-  bool state = (s_input_states >> num) & 0b1;
+  bool state = GET_BIT(s_input_states, num);
 
   xSemaphoreGive(s_input_states_mutex);
 
@@ -158,15 +160,19 @@ digital_input_state_t digital_input_get_state(digital_input_num_t num)
 // Static Funtions
 //**************************************************
 
+/**
+ * @brief Producer Task: Polls GPIOs, detects edges, and queues events.
+ */
 static void input_reader_task(void *args)
 {
   TickType_t last_wake_time = xTaskGetTickCount();
 
   while (true)
   {
-    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(250));
+    // Polling interval (acts as a basic debounce)
+    xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(50));
 
-    if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(1000)) != pdTRUE)
+    if (xSemaphoreTake(s_input_states_mutex, pdMS_TO_TICKS(250)) != pdTRUE)
     {
       ESP_LOGE(TAG, "%s:Fail to take input states mutex", __func__);
       continue;
@@ -174,9 +180,11 @@ static void input_reader_task(void *args)
 
     for (uint16_t i = 0; i < _DIGITAL_INPUT_NUM_MAX; i++)
     {
+      // Read hardware (inverted because of internal Pull-up)
       bool level = !gpio_get_level(s_input_num_map[i]);
 
-      if (((s_input_states >> i) & 0b1) == level)
+      // Edge detection: skip if state has not changed
+      if (GET_BIT(s_input_states, i) == level)
       {
         continue;
       }
@@ -186,19 +194,21 @@ static void input_reader_task(void *args)
           .new_state = level,
       };
 
+      // Queue the event for the dispatcher task
       if (xQueueSend(s_input_queue, &data, pdMS_TO_TICKS(250)) != pdTRUE)
       {
         ESP_LOGE(TAG, "%s:Fail to send input data to queue", __func__);
         continue;
       }
 
+      // Update internal state bitmask
       if (level)
       {
-        s_input_states |= 0b1 << i;
+        SET_BIT(s_input_states, i);
       }
       else
       {
-        s_input_states &= ~(0b1 << i);
+        CLEAR_BIT(s_input_states, i);
       }
     }
 
@@ -208,11 +218,16 @@ static void input_reader_task(void *args)
   vTaskDelete(NULL);
 }
 
+/**
+ * @brief Consumer Task: Waits for queued events and notifies all observers.
+ */
 static void event_dispatcher_task(void *args)
 {
+  input_queue_data_t data;
+
   while (true)
   {
-    input_queue_data_t data;
+    // Blocks until an event arrives in the queue
     if (xQueueReceive(s_input_queue, &data, portMAX_DELAY) != pdTRUE)
     {
       continue;
@@ -224,17 +239,72 @@ static void event_dispatcher_task(void *args)
       continue;
     }
 
-    ESP_LOGI(TAG, "%s:Event num:%d state:%d",__func__, data.num, data.new_state);
-
-    event_node_t *current_node = s_first_node;
-
-    while (current_node != NULL)
-    {
-      current_node->event_handler(data.num, data.new_state);
-      current_node = current_node->next;
-    }
+    // Notify all registered observers
+    foreach_node(s_first_node, data.num, data.new_state);
 
     xSemaphoreGive(s_node_mutex);
   }
+
   vTaskDelete(NULL);
+}
+
+/**
+ * @brief Search for a specific handler in the list to avoid duplicate entries.
+ * @return ESP_OK if found, ESP_FAIL otherwise.
+ */
+static esp_err_t is_handler_present(event_node_t *head, digital_input_event_handler_t handler)
+{
+  event_node_t *current = head;
+  while (current != NULL)
+  {
+    if (current->handler == handler)
+    {
+      return ESP_OK;
+    }
+    current = current->next;
+  }
+  return ESP_FAIL;
+}
+
+/**
+ * @brief Allocates and inserts a new node at the head of the list (LIFO).
+ */
+static esp_err_t add_node(event_node_t **head, digital_input_event_handler_t handler)
+{
+  // Check if handler already exists in the list
+  if (is_handler_present(*head, handler) == ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Handler is already present", __func__);
+    return ESP_OK;
+  }
+
+  event_node_t *new_node = malloc(sizeof(event_node_t));
+  if (new_node == NULL)
+  {
+    ESP_LOGE(TAG, "%s:Fail to alloc new node", __func__);
+    return ESP_ERR_NO_MEM;
+  }
+
+  new_node->handler = handler;
+  new_node->next = *head;
+  *head = new_node;
+  return ESP_OK;
+}
+
+/**
+ * @brief Traverses the list and executes each registered handler callback.
+ */
+static esp_err_t foreach_node(event_node_t *head, const digital_input_num_t num, const bool state)
+{
+  event_node_t *current = head;
+  while (current != NULL)
+  {
+    if (current->handler != NULL)
+    {
+      current->handler(num, state);
+    }
+    current = current->next;
+  }
+
+  return ESP_OK;
 }

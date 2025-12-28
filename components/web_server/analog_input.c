@@ -22,7 +22,11 @@ static const char TAG[] = "web_server:analog_input";
 
 esp_err_t analog_input_register(httpd_handle_t server)
 {
-  ESP_ERROR_CHECK(analog_input_add_event_handler(analog_input_event_handler));
+  if (analog_input_add_event_handler(analog_input_event_handler) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Fail to add event handler", __func__);
+    return ESP_FAIL;
+  }
 
   return ESP_OK;
 }
