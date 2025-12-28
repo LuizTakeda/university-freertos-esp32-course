@@ -1,9 +1,7 @@
 #include "web_server_internals.h"
-
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "digital_input.h"
-
 #include "cJSON.h"
 
 //**************************************************
@@ -54,11 +52,11 @@ esp_err_t digital_input_register(httpd_handle_t server)
 
 /**
  * @brief REST API Handler to get current state of a digital input.
- * Expects query param: ?id=X
+ *        Expects query param: ?id=X
  */
 static esp_err_t get_digital_input_handler(httpd_req_t *req)
 {
-  char query[64]; // Static buffer, no malloc needed for small queries
+  char query[64];
   char value[8];
 
   // 1. Get query string from URL

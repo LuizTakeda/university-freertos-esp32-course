@@ -50,25 +50,23 @@ typedef struct __attribute__((packed))
 // Function Prototypes
 //**************************************************
 
-esp_err_t digital_output_register(httpd_handle_t server);
-
 /**
- * @brief Registers the digital input module within the Web Server context.
- *        This function performs two main integration steps:
- * 
- *        1. Registers the REST API URI handler (`/api/digital-input`) to allow
- *        synchronous polling of input states via HTTP GET requests.
- * 
- *        2. Attaches an internal event handler to the digital input driver, enabling
- *        asynchronous "push" notifications to web clients whenever a hardware
- *        state change (interrupt-driven) occurs.
- * @param server Handle to the active HTTP server instance where the URI will be registered.
+ * @brief Registers the digital output module within the Web Server context.
+ * This function performs the necessary setup for remote output control:
+ *
+ * 1. Registers the GET handler (`/api/digital-output`) to allow web clients 
+ * to poll the current state of any specific digital output.
+ *
+ * 2. Registers the POST handler (`/api/digital-output`) to allow remote 
+ * switching of output states via JSON payloads.
+ *
+ * @param server Handle to the active HTTP server instance where the URIs will be registered.
  * @return
- * - ESP_OK: All handlers registered successfully.
- * 
- * - ESP_FAIL: Failed to register URI or attach the observer callback.
+ * - ESP_OK: All URI handlers registered successfully.
+ *
+ * - ESP_FAIL: Failed to register one or more URI handlers.
  */
-esp_err_t digital_input_register(httpd_handle_t server);
+esp_err_t digital_output_register(httpd_handle_t server);
 
 esp_err_t events_register(httpd_handle_t server);
 
