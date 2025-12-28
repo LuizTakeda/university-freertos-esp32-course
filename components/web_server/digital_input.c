@@ -33,9 +33,17 @@ static const httpd_uri_t s_uri_get_digital_input = {
 
 esp_err_t digital_input_register(httpd_handle_t server)
 {
-  ESP_ERROR_CHECK(httpd_register_uri_handler(server, &s_uri_get_digital_input));
+  if (httpd_register_uri_handler(server, &s_uri_get_digital_input) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Fail to register uri handler", __func__);
+    return ESP_FAIL;
+  }
 
-  ESP_ERROR_CHECK(digital_input_add_event_handler(input_event_handler));
+  if (digital_input_add_event_handler(input_event_handler) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Fail to add event handler", __func__);
+    return ESP_FAIL;
+  }
 
   return ESP_OK;
 }
@@ -44,73 +52,54 @@ esp_err_t digital_input_register(httpd_handle_t server)
 // Static Functions
 //**************************************************
 
+/**
+ * @brief REST API Handler to get current state of a digital input.
+ * Expects query param: ?id=X
+ */
 static esp_err_t get_digital_input_handler(httpd_req_t *req)
 {
-  esp_err_t return_value = ESP_FAIL;
-  char *buf = NULL;
+  char query[64]; // Static buffer, no malloc needed for small queries
+  char value[8];
 
-  size_t query_len = httpd_req_get_url_query_len(req);
-  if (query_len <= 0 || query_len >= 256)
+  // 1. Get query string from URL
+  if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK)
   {
-    ESP_LOGE(TAG, "%s:Invalid query len", __func__);
-    goto end;
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing query string");
+    return ESP_FAIL;
   }
 
-  if ((buf = malloc(query_len + 1)) == NULL)
+  // 2. Extract 'id' parameter
+  if (httpd_query_key_value(query, "id", value, sizeof(value)) != ESP_OK)
   {
-    ESP_LOGE(TAG, "%s:Fail to alloc query buf", __func__);
-    goto end;
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "ID parameter required");
+    return ESP_FAIL;
   }
 
-  if (httpd_req_get_url_query_str(req, buf, query_len + 1) != ESP_OK)
-  {
-    ESP_LOGE(TAG, "%s:Fail to get query str", __func__);
-    goto end;
-  }
-
-  int id;
-  char value[6];
-  if (httpd_query_key_value(buf, "id", value, sizeof(value)) != ESP_OK)
-  {
-    ESP_LOGE(TAG, "%s:Fail to get id from query str", __func__);
-    goto end;
-  }
-  id = atoi(value);
-
+  int id = atoi(value);
   if (id < 0 || id >= _DIGITAL_INPUT_NUM_MAX)
   {
-    ESP_LOGE(TAG, "%s:Invalid id", __func__);
-    goto end;
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid Input ID");
+    return ESP_FAIL;
   }
 
+  // 3. Get hardware state
   digital_input_state_t state = digital_input_get_state(id);
-
   if (state == DIGITAL_INPUT_STATE_FAIL)
   {
-    ESP_LOGE(TAG, "%s: Fail to get the input state", __func__);
-    goto end;
-  }
-
-  char str[16];
-  sprintf(str, "{\"state\":%d}", state == DIGITAL_INPUT_STATE_ON);
-  httpd_resp_send(req, str, HTTPD_RESP_USE_STRLEN);
-
-  return_value = ESP_OK;
-
-end:
-  if (buf)
-  {
-    free(buf);
-  }
-
-  if (return_value != ESP_OK)
-  {
     httpd_resp_send_500(req);
+    return ESP_FAIL;
   }
 
-  return return_value;
+  // 4. Send JSON response
+  char response[32];
+  snprintf(response, sizeof(response), "{\"state\":%d}", state == DIGITAL_INPUT_STATE_ON);
+  httpd_resp_set_type(req, "application/json");
+  return httpd_resp_send(req, response, HTTPD_RESP_USE_STRLEN);
 }
 
+/**
+ * @brief Observer callback that pushes hardware changes to the web event system (WebSocket/SSE).
+ */
 static void input_event_handler(const digital_input_num_t num, const bool state)
 {
   event_t event = {

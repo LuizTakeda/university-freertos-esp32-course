@@ -52,6 +52,22 @@ typedef struct __attribute__((packed))
 
 esp_err_t digital_output_register(httpd_handle_t server);
 
+/**
+ * @brief Registers the digital input module within the Web Server context.
+ *        This function performs two main integration steps:
+ * 
+ *        1. Registers the REST API URI handler (`/api/digital-input`) to allow
+ *        synchronous polling of input states via HTTP GET requests.
+ * 
+ *        2. Attaches an internal event handler to the digital input driver, enabling
+ *        asynchronous "push" notifications to web clients whenever a hardware
+ *        state change (interrupt-driven) occurs.
+ * @param server Handle to the active HTTP server instance where the URI will be registered.
+ * @return
+ * - ESP_OK: All handlers registered successfully.
+ * 
+ * - ESP_FAIL: Failed to register URI or attach the observer callback.
+ */
 esp_err_t digital_input_register(httpd_handle_t server);
 
 esp_err_t events_register(httpd_handle_t server);
@@ -63,7 +79,7 @@ esp_err_t events_send(event_t *event);
  * @param server Handle to the running HTTP server instance.
  * @return
  * - ESP_OK: Registration successful.
- * 
+ *
  * - ESP_FAIL: Failed to attach the event handler.
  */
 esp_err_t analog_input_register(httpd_handle_t server);
@@ -71,9 +87,9 @@ esp_err_t analog_input_register(httpd_handle_t server);
 /**
  * @brief Subscribes the web server to environment sensor updates.
  * @param server Handle to the running HTTP server instance.
- * @return 
+ * @return
  * - ESP_OK: Successfully registered as a sensor observer.
- * 
+ *
  * - ESP_FAIL: Failed to register the event handler.
  */
 esp_err_t sensor_register(httpd_handle_t server);
