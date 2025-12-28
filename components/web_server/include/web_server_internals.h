@@ -58,6 +58,14 @@ esp_err_t events_register(httpd_handle_t server);
 
 esp_err_t events_send(event_t *event);
 
+/**
+ * @brief Registers the web server as an observer of analog input events.
+ * @param server Handle to the running HTTP server instance.
+ * @return
+ * - ESP_OK: Registration successful.
+ * 
+ * - ESP_FAIL: Failed to attach the event handler.
+ */
 esp_err_t analog_input_register(httpd_handle_t server);
 
 esp_err_t sensor_register(httpd_handle_t server);
