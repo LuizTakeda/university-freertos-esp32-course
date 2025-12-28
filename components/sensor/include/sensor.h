@@ -23,6 +23,7 @@ typedef void (*sensor_event_handler_t)(float humidity, float temperature);
  *        the periodic background task responsible for sampling the physical sensor.
  * * @return
  * - ESP_OK: Initialization successful.
+ *
  * - ESP_FAIL: Failed to create OS resources or task.
  */
 esp_err_t sensor_initialize();
@@ -35,7 +36,9 @@ esp_err_t sensor_initialize();
  * @param handler The callback function to be registered.
  * @return
  * - ESP_OK: Handler registered successfully.
+ *
  * - ESP_ERR_INVALID_ARG: Provided handler was NULL.
+ *
  * - ESP_ERR_NO_MEM: Memory allocation failed for the observer node.
  */
 esp_err_t sensor_add_event_handler(sensor_event_handler_t handler);

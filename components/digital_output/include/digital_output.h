@@ -41,6 +41,7 @@ typedef enum
  *        and sets the initial state to low.
  * @return
  * - ESP_OK: All outputs configured successfully.
+ *
  * - ESP_FAIL: Hardware configuration error.
  */
 esp_err_t digital_output_initialize();
@@ -51,17 +52,20 @@ esp_err_t digital_output_initialize();
  * @param num The logical output number to query.
  * @return
  * - DIGITAL_OUTPUT_ON: The pin is currently HIGH.
+ *
  * - DIGITAL_OUTPUT_OFF: The pin is currently LOW.
+ *
  * - DIGITAL_OUTPUT_INVALID_ARG: Provided channel is out of bounds.
  */
 digital_output_state_t digital_output_get_state(digital_output_num_t num);
 
 /**
  * @brief Sets the logic level of a specific digital output.
- * @param num The logical output number to modify.
+ * @param num       The logical output number to modify.
  * @param new_state The desired logic level (true for HIGH, false for LOW).
  * @return
  * - ESP_OK: Output set successfully.
+ *
  * - ESP_ERR_INVALID_ARG: Provided channel is out of bounds.
  */
 esp_err_t digital_output_set_state(digital_output_num_t num, bool new_state);

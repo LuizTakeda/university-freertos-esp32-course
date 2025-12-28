@@ -1,21 +1,17 @@
 menu "WiFi Configuration"
 
-config WIFI_SSID
-    string "WiFi SSID"
-    default "myssid"
-    help
-        SSID (network name) for the example to connect to.
-
-config WIFI_PASSWORD
-    string "WiFi Password"
-    default "mypassword"
-    help
-        WiFi password (WPA or WPA2) for the example to use.
-
-config MAXIMUM_RETRY
-        int "Maximum retry"
-        default 5
+    config WIFI_SSID
+        string "WiFi SSID"
+        default ""
         help
-            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
+            SSID (network name) of your Access Point.
+            This field cannot be empty for the station to connect.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default ""
+        help
+            WiFi password (WPA or WPA2).
+            Leave empty if the network is open (not recommended).
 
 endmenu

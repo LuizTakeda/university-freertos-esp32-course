@@ -46,6 +46,7 @@ typedef enum
  *        the event queue, and spawns the reader and dispatcher tasks.
  * @return
  * - ESP_OK: Success.
+ * 
  * - ESP_FAIL: Initialization of hardware or OS resources failed.
  */
 esp_err_t digital_input_initialize();
@@ -57,7 +58,9 @@ esp_err_t digital_input_initialize();
  * @param handler The callback function to be registered.
  * @return
  * - ESP_OK: Successfully added.
+ * 
  * - ESP_ERR_INVALID_ARG: Handler was NULL.
+ * 
  * - ESP_ERR_NO_MEM: Failed to allocate memory for the new observer node.
  */
 esp_err_t digital_input_add_event_handler(digital_input_event_handler_t handler);
@@ -68,7 +71,9 @@ esp_err_t digital_input_add_event_handler(digital_input_event_handler_t handler)
  * @param num The logical input number to check.
  * @return 
  * - DIGITAL_INPUT_STATE_ON: Input is active.
+ * 
  * - DIGITAL_INPUT_STATE_OFF: Input is inactive.
+ * 
  * - DIGITAL_INPUT_STATE_FAIL: Could not access state (mutex timeout).
  */
 digital_input_state_t digital_input_get_state(digital_input_num_t num);
