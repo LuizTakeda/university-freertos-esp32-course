@@ -1,5 +1,18 @@
 :root {
   --font-ui: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --color-bg: oklch(14.1% 0.005 285.823);
+  --color-menu: oklch(21% 0.006 285.823);
+  --color-text: oklch(92% 0.004 285.823);
+  --color-button: oklch(55% 0.15 260);
+  --color-button-hover: oklch(62% 0.15 260);
+  --color-primary-color-red: oklch(65% 0.2 25);
+  --color-utfpr: #ffbe00;
+  --color-border: oklch(28% 0.007 285.823);
+
+  --color-on: oklch(70% 0.14 145);
+  --color-off: oklch(65% 0.18 25);
+  --color-warning: oklch(75% 0.15 70);
+  --color-loading: oklch(70% 0.12 230);
 }
 
 body {
@@ -45,6 +58,7 @@ button,
   text-align: center;
   display: block;
   font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .digital-grid {

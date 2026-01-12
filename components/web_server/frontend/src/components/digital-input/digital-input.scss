@@ -5,18 +5,18 @@ digital-input-element {
   border-radius: 15px;
 
   &.on {
-    background-color: green;
+    background-color: var(--color-on);
   }
 
   &.off {
-    background-color: orange;
+    background-color: var(--color-off);
   }
 
   &.loading {
-    background-color: blue;
+    background-color: var(--color-loading);
   }
 
   &.error {
-    background-color: red;
+    background-color: var(--color-warning);
   }
 }

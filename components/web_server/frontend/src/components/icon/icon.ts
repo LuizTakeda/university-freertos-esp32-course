@@ -1,10 +1,5 @@
 import "./icon.scss";
-import Moon from "./svg/moon-svgrepo-com.svg";
-import Sun from "./svg/sun-svgrepo-com.svg";
 import ArrowUp from "./svg/alt-arrow-up-svgrepo-com.svg";
-import Home from "./svg/home-svgrepo-com.svg";
-import Cpu from "./svg/cpu-bolt-svgrepo-com.svg";
-import Settings from "./svg/settings-svgrepo-com.svg";
 import SortHorizontal from "./svg/square-sort-horizontal-svgrepo-com.svg";
 import Tunning from "./svg/tuning-square-2-svgrepo-com.svg"
 
@@ -24,28 +19,8 @@ export default class IconElement extends HTMLElement {
       case "":
         break;
 
-      case "moon":
-        this.innerHTML = Moon;
-        break;
-
-      case "sun":
-        this.innerHTML = Sun;
-        break;
-
       case "arrow-up":
         this.innerHTML = ArrowUp;
-        break
-
-      case "home":
-        this.innerHTML = Home;
-        break
-
-      case "cpu":
-        this.innerHTML = Cpu;
-        break
-
-      case "settings":
-        this.innerHTML = Settings;
         break
 
       case "sort-horizontal":

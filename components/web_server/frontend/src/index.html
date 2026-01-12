@@ -4,23 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FreeRTOS + ESP32</title>
+  <title>Web Dashboard</title>
 </head>
 
 <body>
   <noscript>
     <p style="color: red;">This dashboard requires JavaScript to function properly.</p>
   </noscript>
-  <theme-changer></theme-changer>
   <dashboard-struct>
     <dashboard-menu>
-
       <!-- Options -->
       <dashboard-options>
-        <dashboard-option target="home">
-          <icon-element name="home"></icon-element>
-          Home
-        </dashboard-option>
         <dashboard-option target="i/o">
           <icon-element name="sort-horizontal"></icon-element>
           Input/Output
@@ -30,7 +24,6 @@
           Analog Input
         </dashboard-option>
       </dashboard-options>
-
       <!-- Footer -->
       <dashboard-menu-footer>
         <a class="clean-a" href="https://www.utfpr.edu.br/" target="_blank">
@@ -43,30 +36,15 @@
         </a>
       </dashboard-menu-footer>
     </dashboard-menu>
-    <dashboard-content default="home">
-
-      <!-- Home Page -->
-      <dashboard-page name="home">
-        <h1 style="text-align: center;">Home</h1>
-        <div class="container full center">
-          <span style="font-size: 40px; text-align: center;">
-            🏗️ Work in progress!
-          </span>
-        </div>
-      </dashboard-page>
-
+    <dashboard-content default="i/o">
       <!-- I/O Page -->
       <dashboard-page name="i/o">
-        <h1 style="text-align: center;">Input/Output</h1>
-
-        <h2>Inputs</h2>
+        <h1 style="text-align: center;">Digital I/O</h1>
         <div class="digital-grid">
           <digital-input-element num="0"></digital-input-element>
           <digital-input-element num="1"></digital-input-element>
           <digital-input-element num="2"></digital-input-element>
         </div>
-
-        <h2>Outputs</h2>
         <div class="digital-grid">
           <digital-output-element num="0"></digital-output-element>
           <digital-output-element num="1"></digital-output-element>
@@ -74,7 +52,6 @@
           <digital-output-element num="3"></digital-output-element>
         </div>
       </dashboard-page>
-
       <!-- Analog Page -->
       <dashboard-page name="analog">
         <h1 style="text-align: center;">Analog Inputs</h1>
@@ -85,7 +62,6 @@
           <analog-input-element name="Test1" num="3" min="0" max="100">Humidity</analog-input-element>
         </div>
       </dashboard-page>
-
     </dashboard-content>
   </dashboard-struct>
 

@@ -1,7 +1,7 @@
 import DeviceEvents, { NewInputStateEvent } from "../../utils/device-events";
 import "./digital-input.scss";
 
-type DigitalInputState = "on" | "off" | "loading" | "error";
+type DigitalInputState = "on" | "off" | "loading" | "warning";
 
 export default class DigitalInputElement extends HTMLElement {
   private _state: DigitalInputState | null = null;
@@ -37,7 +37,7 @@ export default class DigitalInputElement extends HTMLElement {
       return;
     }
 
-    this.classList.remove("on", "off", "loading", "error");
+    this.classList.remove("on", "off", "loading", "warning");
     this.classList.add(newState);
 
     this._state = newState;
@@ -50,7 +50,7 @@ export default class DigitalInputElement extends HTMLElement {
       const result = await fetch(`/api/digital-input?id=${this.num}`);
 
       if (!result.ok) {
-        this.state = "error";
+        this.state = "warning";
         return;
       }
 
@@ -59,7 +59,7 @@ export default class DigitalInputElement extends HTMLElement {
       this.state = state ? "on" : "off";
     } catch (error) {
       console.error(error);
-      this.state = "error";
+      this.state = "warning";
     }
   }
 

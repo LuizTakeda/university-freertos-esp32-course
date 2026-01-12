@@ -1,6 +1,6 @@
 import "./digital-output.scss";
 
-type DigitalOutputState = "on" | "off" | "loading" | "error";
+type DigitalOutputState = "on" | "off" | "loading" | "warning";
 
 export default class DigitalOutputElement extends HTMLElement {
   private _state: DigitalOutputState | null = null;
@@ -38,7 +38,7 @@ export default class DigitalOutputElement extends HTMLElement {
       return;
     }
 
-    this.classList.remove("on", "off", "loading", "error");
+    this.classList.remove("on", "off", "loading", "warning");
     this.classList.add(newState);
 
     this._state = newState;
@@ -54,7 +54,7 @@ export default class DigitalOutputElement extends HTMLElement {
         await this._updateState(true);
         break;
 
-      case "error":
+      case "warning":
         await this._loadValue();
         break;
 
@@ -69,7 +69,7 @@ export default class DigitalOutputElement extends HTMLElement {
       const result = await fetch(`/api/digital-output?id=${this.num}`);
 
       if (!result.ok) {
-        this.state = "error";
+        this.state = "warning";
         return;
       }
 
@@ -78,7 +78,7 @@ export default class DigitalOutputElement extends HTMLElement {
       this.state = state ? "on" : "off";
     } catch (error) {
       console.error(error);
-      this.state = "error";
+      this.state = "warning";
     }
   }
 
@@ -95,7 +95,7 @@ export default class DigitalOutputElement extends HTMLElement {
       });
 
       if (!result.ok) {
-        this.state = "error";
+        this.state = "warning";
         return;
       }
 
@@ -104,7 +104,7 @@ export default class DigitalOutputElement extends HTMLElement {
       this.state = state ? "on" : "off";
     } catch (error) {
       console.error(error);
-      this.state = "error";
+      this.state = "warning";
     }
   }
 }
