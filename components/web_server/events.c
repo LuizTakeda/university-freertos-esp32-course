@@ -28,6 +28,9 @@ typedef struct req_node_t
 static void events_task();
 
 static esp_err_t events_handler(httpd_req_t *req);
+static esp_err_t is_req_present(req_node_t *head, httpd_req_t *req);
+static esp_err_t add_node(req_node_t **head, httpd_req_t *req);
+static httpd_req_t *pop_node(req_node_t **node);
 
 //**************************************************
 // Globals
@@ -66,9 +69,17 @@ esp_err_t events_register(httpd_handle_t server)
     return ESP_FAIL;
   }
 
-  xTaskCreate(events_task, "events_task", 4096, NULL, 3, NULL);
+  if (xTaskCreate(events_task, "events_task", 4096, NULL, 3, NULL) != pdTRUE)
+  {
+    ESP_LOGE(TAG, "%s:Fail to create event task", __func__);
+    return ESP_FAIL;
+  }
 
-  ESP_ERROR_CHECK(httpd_register_uri_handler(server, &s_uri_get_events));
+  if (httpd_register_uri_handler(server, &s_uri_get_events) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Fail to register uri handler", __func__);
+    return ESP_FAIL;
+  }
 
   return ESP_OK;
 }
@@ -82,6 +93,10 @@ esp_err_t events_send(event_t *event)
 // Static Functions
 //**************************************************
 
+/**
+ * @brief Task that consumes events from the queue and sends them to all
+ *        registered SSE clients. Handles automatic cleanup of dead connections.
+ */
 static void events_task()
 {
   static char buf[256] = "";
@@ -100,30 +115,31 @@ static void events_task()
       continue;
     }
 
+    // 1. Format the SSE message based on event type
     switch (event.name)
     {
     case EVENT_NAME_DIGITAL_INPUT:
-      sprintf(buf,
-              "event: digital-input\n"
-              "data: {\"num\":%d, \"value\":%d}\n\n",
-              event.payload.digital_input.num, event.payload.digital_input.value);
+      snprintf(buf, sizeof(buf),
+               "event: digital-input\n"
+               "data: {\"num\":%d, \"value\":%d}\n\n",
+               event.payload.digital_input.num, event.payload.digital_input.value);
       break;
 
     case EVENT_NAME_ANALOG_INPUT:
-      sprintf(buf,
-              "event: analog-input\n"
-              "data: {\"num\":%d, \"value\":%d}\n\n",
-              event.payload.analog_input.num, event.payload.analog_input.value);
+      snprintf(buf, sizeof(buf),
+               "event: analog-input\n"
+               "data: {\"num\":%d, \"value\":%d}\n\n",
+               event.payload.analog_input.num, event.payload.analog_input.value);
       break;
 
     case EVENT_NAME_SENSOR:
-      sprintf(buf,
-              "event: analog-input\n"
-              "data: {\"num\":%d, \"value\":%f}\n\n"
-              "event: analog-input\n"
-              "data: {\"num\":%d, \"value\":%f}\n\n",
-              2, event.payload.sensor.temperature,
-              3, event.payload.sensor.humidity);
+      snprintf(buf, sizeof(buf),
+               "event: analog-input\n"
+               "data: {\"num\":%d, \"value\":%f}\n\n"
+               "event: analog-input\n"
+               "data: {\"num\":%d, \"value\":%f}\n\n",
+               2, event.payload.sensor.temperature,
+               3, event.payload.sensor.humidity);
       break;
 
     default:
@@ -131,37 +147,18 @@ static void events_task()
       goto end;
     }
 
+    // 2. Iterate through clients and send the formatted chunk
     req_node_t *node = s_first_req_node;
     while (node != NULL)
     {
       if (httpd_resp_send_chunk(node->req, buf, HTTPD_RESP_USE_STRLEN) != ESP_OK)
       {
         ESP_LOGE(TAG, "%s:Fail to send chunk", __func__);
-        req_node_t *invalid_node = node;
+        httpd_req_t *req = pop_node(&node);
 
-        if (invalid_node->prev == NULL)
-        {
-          node = invalid_node->next;
-          if (node != NULL)
-          {
-            node->prev = NULL;
-          }
-          s_first_req_node = node;
-        }
-        else
-        {
-          node = invalid_node->next;
-          invalid_node->prev->next = node;
-          if (node != NULL)
-          {
-            node->prev = invalid_node->prev;
-          }
-        }
-
-        httpd_resp_send_chunk(invalid_node->req, NULL, 0);
-        httpd_req_async_handler_complete(invalid_node->req);
-        free(invalid_node);
-        continue;
+        httpd_resp_send_chunk(req, NULL, 0);
+        httpd_req_async_handler_complete(req);
+        continue; // 'node' was updated by pop_node
       }
 
       node = node->next;
@@ -174,68 +171,129 @@ static void events_task()
   vTaskDelete(NULL);
 }
 
+/**
+ * @brief Handles incoming GET requests for SSE. Upgrades the connection
+ *        to asynchronous and adds it to the list.
+ */
 static esp_err_t events_handler(httpd_req_t *req)
 {
-  esp_err_t return_value = ESP_FAIL;
   httpd_req_t *async_req = NULL;
-  req_node_t *new_node = NULL;
 
   httpd_resp_set_type(req, "text/event-stream");
   httpd_resp_set_hdr(req, "Cache-Control", "no-cache, no-transform");
   httpd_resp_set_hdr(req, "Connection", "keep-alive");
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
   if (httpd_req_async_handler_begin(req, &async_req) != ESP_OK)
   {
-    ESP_LOGE(TAG, "%s:Fail to create async req", __func__);
-    goto end;
+    ESP_LOGE(TAG, "%s:Failed to create async req", __func__);
+    return ESP_ERR_NO_MEM;
   }
-
-  if ((new_node = malloc(sizeof(req_node_t))) == NULL)
-  {
-    ESP_LOGE(TAG, "%s:Fail to alloc req node", __func__);
-    goto end;
-  }
-
-  new_node->prev = NULL;
-  new_node->next = NULL;
-  new_node->req = async_req;
 
   if (xSemaphoreTake(s_req_node_mutex, portMAX_DELAY) != pdTRUE)
   {
-    ESP_LOGE(TAG, "%s:Fail to take req node mutex", __func__);
-    goto end;
+    ESP_LOGE(TAG, "%s:Fail to take mutex", __func__);
+    httpd_req_async_handler_complete(async_req);
+    httpd_resp_send_500(req);
+    return ESP_FAIL;
   }
 
-  if (s_first_req_node == NULL)
+  esp_err_t err = add_node(&s_first_req_node, async_req);
+  if (err != ESP_OK)
   {
-    s_first_req_node = new_node;
-  }
-  else
-  {
-    req_node_t *last_node = s_first_req_node;
-    while (last_node->next != NULL)
-    {
-      last_node = last_node->next;
-    }
-    last_node->next = new_node;
-    new_node->prev = last_node;
-  }
-
-  xSemaphoreGive(s_req_node_mutex);
-
-  return_value = ESP_OK;
-end:
-  if (return_value != ESP_OK && new_node)
-  {
-    free(new_node);
-  }
-
-  if (return_value != ESP_OK && async_req)
-  {
-    httpd_resp_send_chunk(async_req, NULL, 0);
+    ESP_LOGE(TAG, "%s:Failed to add node to list", __func__);
     httpd_req_async_handler_complete(async_req);
     httpd_resp_send_500(req);
   }
 
-  return return_value;
+  xSemaphoreGive(s_req_node_mutex);
+
+  return err;
+}
+
+/**
+ * @brief Checks if a request is already present in the linked list.
+ */
+static esp_err_t is_req_present(req_node_t *head, httpd_req_t *req)
+{
+  req_node_t *node = head;
+
+  while (node != NULL)
+  {
+    if (node->req == req)
+    {
+      return ESP_OK;
+    }
+
+    node = node->next;
+  }
+
+  return ESP_FAIL;
+}
+
+/**
+ * @brief Allocates and adds a new node to the head of the doubly linked list.
+ */
+static esp_err_t add_node(req_node_t **head, httpd_req_t *req)
+{
+  if (req == NULL || head == NULL)
+  {
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  if (is_req_present(*head, req) == ESP_OK)
+  {
+    return ESP_OK;
+  }
+
+  req_node_t *new_node = malloc(sizeof(req_node_t));
+  if (new_node == NULL)
+  {
+    ESP_LOGE(TAG, "%s:Fail to alloc new node", __func__);
+    return ESP_ERR_NO_MEM;
+  }
+
+  new_node->req = req;
+  new_node->prev = NULL;
+  new_node->next = *head;
+
+  if (*head != NULL)
+  {
+    (*head)->prev = new_node;
+  }
+
+  *head = new_node;
+  return ESP_OK;
+}
+
+/**
+ * @brief Removes a specific node from the doubly linked list and frees its memory.
+ *        Updates the pointer to the next node for iteration safety.
+ */
+static httpd_req_t *pop_node(req_node_t **node_ptr)
+{
+  if (node_ptr == NULL || *node_ptr == NULL)
+  {
+    return NULL;
+  }
+
+  req_node_t *to_remove = *node_ptr;
+  req_node_t *prev_node = to_remove->prev;
+  req_node_t *next_node = to_remove->next;
+
+  httpd_req_t *req = to_remove->req;
+
+  if (prev_node != NULL)
+  {
+    prev_node->next = next_node;
+  }
+
+  if (next_node != NULL)
+  {
+    next_node->prev = prev_node;
+  }
+
+  *node_ptr = next_node;
+  free(to_remove);
+  return req;
 }
