@@ -65,7 +65,7 @@ typedef struct __attribute__((packed))
 } event_t;
 
 //**************************************************
-// Function Prototypes
+// Public Functions
 //**************************************************
 
 /**
