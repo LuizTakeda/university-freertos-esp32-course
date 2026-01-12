@@ -21,10 +21,9 @@ typedef void (*sensor_event_handler_t)(float humidity, float temperature);
  * @brief Initializes the sensor component resources.
  *        This function creates the synchronization primitives (mutex) and spawns
  *        the periodic background task responsible for sampling the physical sensor.
- * * @return
- * - ESP_OK: Initialization successful.
+ * @return - ESP_OK: Initialization successful.
  *
- * - ESP_FAIL: Failed to create OS resources or task.
+ *         - ESP_FAIL: Failed to create OS resources or task.
  */
 esp_err_t sensor_initialize();
 
@@ -34,11 +33,10 @@ esp_err_t sensor_initialize();
  *        called sequentially every time a valid sample is read from the hardware.
  * @note This function is thread-safe and prevents duplicate handler registration.
  * @param handler The callback function to be registered.
- * @return
- * - ESP_OK: Handler registered successfully.
+ * @return - ESP_OK: Handler registered successfully.
  *
- * - ESP_ERR_INVALID_ARG: Provided handler was NULL.
+ *         - ESP_ERR_INVALID_ARG: Provided handler was NULL.
  *
- * - ESP_ERR_NO_MEM: Memory allocation failed for the observer node.
+ *         - ESP_ERR_NO_MEM: Memory allocation failed for the observer node.
  */
 esp_err_t sensor_add_event_handler(sensor_event_handler_t handler);

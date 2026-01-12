@@ -1,9 +1,7 @@
 #include "web_server.h"
 #include "web_server_internals.h"
-
 #include <stdio.h>
 #include <sys/param.h>
-
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "esp_event.h"
@@ -12,32 +10,23 @@
 #include "lwip/sys.h"
 
 //**************************************************
-// Define
-//**************************************************
-
-//**************************************************
 // Static Function Prototypes
 //**************************************************
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
-
 static esp_err_t start();
-
 static esp_err_t stop();
-
 static esp_err_t get_index_html_handler(httpd_req_t *req);
-
 static esp_err_t get_bundle_js_handler(httpd_req_t *req);
 
 //**************************************************
 // Files
 //**************************************************
 
-extern const uint8_t index_html_start[] asm("_binary_index_html_start");
-extern const uint8_t index_html_end[] asm("_binary_index_html_end");
-
-extern const uint8_t bundle_js_start[] asm("_binary_bundle_js_start");
-extern const uint8_t bundle_js_end[] asm("_binary_bundle_js_end");
+extern const uint8_t s_index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t s_index_html_end[] asm("_binary_index_html_end");
+extern const uint8_t s_bundle_js_start[] asm("_binary_bundle_js_start");
+extern const uint8_t s_bundle_js_end[] asm("_binary_bundle_js_end");
 
 //**************************************************
 // Globals
@@ -45,30 +34,28 @@ extern const uint8_t bundle_js_end[] asm("_binary_bundle_js_end");
 
 static char TAG[] = "web-server";
 
-static httpd_handle_t server = NULL;
+static httpd_handle_t s_server = NULL;
 
 // ##### Endpoints #####
 
-httpd_uri_t uri_get_index_html = {
+static const httpd_uri_t s_uri_get_index_html = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = get_index_html_handler,
     .user_ctx = NULL};
 
-httpd_uri_t uri_get_bundle_js = {
+static const httpd_uri_t s_uri_get_bundle_js = {
     .uri = "/bundle.js",
     .method = HTTP_GET,
     .handler = get_bundle_js_handler,
     .user_ctx = NULL};
 
 //**************************************************
-// Funtions
+// Public Functions
 //**************************************************
 
 esp_err_t web_server_initialize()
 {
-  ESP_LOGI(TAG, "%s: Start", __func__);
-
   esp_err_t err = esp_event_loop_create_default();
   if (err != ESP_OK && err != ESP_ERR_INVALID_STATE)
   {
@@ -88,8 +75,6 @@ esp_err_t web_server_initialize()
                                                       NULL,
                                                       NULL));
 
-  ESP_LOGI(TAG, "%s: Finish", __func__);
-
   return ESP_OK;
 }
 
@@ -97,83 +82,88 @@ esp_err_t web_server_initialize()
 // Static Functions
 //**************************************************
 
+/**
+ * @brief Dispatches Wi-Fi and IP events to start or stop the server.
+ *        Ensures the server only runs when a network connection is active.
+ */
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-  if (event_base == WIFI_EVENT)
+  if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
   {
-    switch (event_id)
-    {
-    case WIFI_EVENT_STA_DISCONNECTED:
-      stop();
-      break;
-
-    default:
-      break;
-    }
+    stop();
   }
-
-  if (event_base == IP_EVENT)
+  else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
   {
-    switch (event_id)
-    {
-    case IP_EVENT_STA_GOT_IP:
-      start();
-      break;
-
-    default:
-      break;
-    }
+    start();
   }
 }
 
+/**
+ * @brief Starts the HTTP server and registers all application-specific 
+ *        URI handlers and hardware modules.
+ * @return - ESP_OK: Server started and modules registered.
+ * 
+ *         - ESP_FAIL: Critical failure during server startup.
+ */
 static esp_err_t start()
 {
-  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-
-  if (httpd_start(&server, &config) != ESP_OK)
+  if (s_server != NULL)
   {
+    return ESP_OK;
+  }
+
+  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+  config.lru_purge_enable = true;
+
+  if (httpd_start(&s_server, &config) != ESP_OK)
+  {
+    ESP_LOGE(TAG, "%s:Error starting server!", __func__);
     return ESP_FAIL;
   }
 
-  httpd_register_uri_handler(server, &uri_get_index_html);
-  httpd_register_uri_handler(server, &uri_get_bundle_js);
+  // Registering Core Web Content
+  httpd_register_uri_handler(s_server, &s_uri_get_index_html);
+  httpd_register_uri_handler(s_server, &s_uri_get_bundle_js);
 
-  digital_output_register(server);
-  digital_input_register(server);
-  events_register(server);
-
-  if (analog_input_register(server) != ESP_OK)
-  {
-    ESP_LOGE(TAG, "%s:Analog Input is unavailable", __func__);
-  }
-
-  sensor_register(server);
-
-  ESP_LOGI(TAG, "server started");
+  // Registering Application Modules
+  digital_output_register(s_server);
+  digital_input_register(s_server);
+  events_register(s_server);
+  analog_input_register(s_server);
+  sensor_register(s_server);
+  sensor_register(s_server);
 
   return ESP_OK;
 }
 
+/**
+ * @brief Stops the HTTP server and clears the server handle.
+ * @return - ESP_OK: Server stopped successfully.
+ */
 static esp_err_t stop()
 {
-  if (server)
+  if (s_server)
   {
-    httpd_stop(server);
-    ESP_LOGI(TAG, "server stopped");
+    httpd_stop(s_server);
+    s_server = NULL;
   }
   return ESP_OK;
 }
 
+/**
+ * @brief Handler for the root path. Serves the embedded 'index.html' file.
+ */
 static esp_err_t get_index_html_handler(httpd_req_t *req)
 {
   httpd_resp_set_type(req, "text/html");
-  httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
-  return ESP_OK;
+  return httpd_resp_send(req, (const char *)s_index_html_start, s_index_html_end - s_index_html_start);
 }
 
+/**
+ * @brief Handler for the JavaScript bundle. Serves the embedded 'bundle.js' file.
+ */
 static esp_err_t get_bundle_js_handler(httpd_req_t *req)
 {
   httpd_resp_set_type(req, "application/javascript");
-  httpd_resp_send(req, (const char *)bundle_js_start, bundle_js_end - bundle_js_start);
-  return ESP_OK;
+  return httpd_resp_send(req, (const char *)s_bundle_js_start, s_bundle_js_end - s_bundle_js_start);
 }
