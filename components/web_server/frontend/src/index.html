@@ -39,22 +39,26 @@
     <dashboard-content default="i/o">
       <!-- I/O Page -->
       <dashboard-page name="i/o">
-        <h1 style="text-align: center;">Digital I/O</h1>
+        <h1>Digital I/O</h1>
+        <!-- Inputs -->
+        <h2>Inputs</h2>
         <div class="digital-grid">
-          <digital-input-element num="0"></digital-input-element>
-          <digital-input-element num="1"></digital-input-element>
-          <digital-input-element num="2"></digital-input-element>
+          <digital-input-element num="0">In 0</digital-input-element>
+          <digital-input-element num="1">In 1</digital-input-element>
+          <digital-input-element num="2">In 2</digital-input-element>
         </div>
+        <!-- Outputs -->
+        <h2>Outputs</h2>
         <div class="digital-grid">
-          <digital-output-element num="0"></digital-output-element>
-          <digital-output-element num="1"></digital-output-element>
-          <digital-output-element num="2"></digital-output-element>
-          <digital-output-element num="3"></digital-output-element>
+          <digital-output-element num="0">Out 0</digital-output-element>
+          <digital-output-element num="1">Out 1</digital-output-element>
+          <digital-output-element num="2">Out 2</digital-output-element>
+          <digital-output-element num="3">Out 3</digital-output-element>
         </div>
       </dashboard-page>
       <!-- Analog Page -->
       <dashboard-page name="analog">
-        <h1 style="text-align: center;">Analog Inputs</h1>
+        <h1>Analog Inputs</h1>
         <div class="analog-grid">
           <analog-input-element num="0" min="0" max="4096">Analog 0</analog-input-element>
           <analog-input-element num="1" min="0" max="4096">Analog 1</analog-input-element>
@@ -64,7 +68,6 @@
       </dashboard-page>
     </dashboard-content>
   </dashboard-struct>
-
   <script src="bundle.js"></script>
 </body>
 

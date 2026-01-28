@@ -1,22 +1,46 @@
 digital-input-element {
   width: 100%;
-  aspect-ratio: 1/1;
-  display: inline-block;
-  border-radius: 15px;
+  aspect-ratio: 1 / 1;
+  border-radius: 15px; 
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  
+  padding: 10%; 
+  box-sizing: border-box; 
+  font-family: sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(0.8rem, 5cqi, 1.5rem);
+  
+  transition: all 0.2s;
 
   &.on {
     background-color: var(--color-on);
+    color: var(--color-on-text, white);
   }
 
   &.off {
     background-color: var(--color-off);
+    color: var(--color-off-text, #ccc);
   }
 
   &.loading {
     background-color: var(--color-loading);
+    cursor: wait;
+    opacity: 0.8;
   }
 
-  &.error {
+  &.warning {
     background-color: var(--color-warning);
+    animation: pulse 1.5s infinite;
   }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
 }
