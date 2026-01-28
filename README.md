@@ -27,13 +27,15 @@ Part of [*The Parallel Computing School: Short Courses and Tutorials*](https://g
 The dashboard is built with [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) and [Webpack](https://webpack.js.org/) to bundle and minify the project, making it ideal for resource-limited devices like the ESP32.
 
 ### Desktop
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7146b382-f8f5-460a-bc46-5b8e12310341" />
+<img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/9e0e7447-379c-4b75-963f-592c2925e2e3" />
+<img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/94fded25-5059-4fc1-a0be-00b0b86bcaae" />
 
 ### Mobile
 <img width="300" alt="localhost_3000_(iPhone SE)" src="https://github.com/user-attachments/assets/b91b1cf1-b31a-43e2-832a-200d8805cee4" />
 <img width="300" alt="localhost_3000_(iPhone SE) (1)" src="https://github.com/user-attachments/assets/bac0e8e7-3791-44de-aca5-db9429861d0a" />  
 
 For more details, see the Frontend [Frontend README](./components/web_server/frontend/README.md)
+
 
 
 
