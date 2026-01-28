@@ -35,4 +35,5 @@ The dashboard is built with [Web Components](https://developer.mozilla.org/en-US
 <img height="500" alt="image" src="https://github.com/user-attachments/assets/ebdbfb8a-161f-4b1d-ae9e-bef3b525f36d" />
 <img height="500" alt="image" src="https://github.com/user-attachments/assets/483c86ad-356a-498a-ae5c-352f311a1cb6" />
 
-For more details, see the Frontend [Frontend README](./components/web_server/frontend/README.md)
+For more details, see the [Frontend README](./components/web_server/frontend/README.md)
+
