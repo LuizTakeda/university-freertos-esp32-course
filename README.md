@@ -31,11 +31,8 @@ The dashboard is built with [Web Components](https://developer.mozilla.org/en-US
 <img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/94fded25-5059-4fc1-a0be-00b0b86bcaae" />
 
 ### Mobile
-<img width="300" alt="localhost_3000_(iPhone SE)" src="https://github.com/user-attachments/assets/b91b1cf1-b31a-43e2-832a-200d8805cee4" />
-<img width="300" alt="localhost_3000_(iPhone SE) (1)" src="https://github.com/user-attachments/assets/bac0e8e7-3791-44de-aca5-db9429861d0a" />  
+<img height="500" alt="image" src="https://github.com/user-attachments/assets/38c5143b-0b90-49f5-bce2-a47aee993ab1" />
+<img height="500" alt="image" src="https://github.com/user-attachments/assets/ebdbfb8a-161f-4b1d-ae9e-bef3b525f36d" />
+<img height="500" alt="image" src="https://github.com/user-attachments/assets/483c86ad-356a-498a-ae5c-352f311a1cb6" />
 
 For more details, see the Frontend [Frontend README](./components/web_server/frontend/README.md)
-
-
-
-
