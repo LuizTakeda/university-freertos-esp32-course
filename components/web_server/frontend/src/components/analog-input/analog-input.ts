@@ -1,154 +1,108 @@
-import "./analog-input.scss"
+import "./analog-input.scss";
 import DeviceEvents, { NewAnalogStateEvent } from "../../utils/device-events";
 
 export default class AnalogInputElement extends HTMLElement {
   private path: SVGPathElement | null = null;
+  private currentText: Element | null = null;
+  private records: number[] = [];
 
   private readonly MARGIN_LEFT = 30;
   private readonly MARGIN_RIGHT = 190;
   private readonly STEPS = 5;
-
-  private records: number[] = [];
+  private readonly VIEW_HEIGHT = 100;
+  private readonly GRAPH_BOTTOM = 90;
+  private readonly GRAPH_TOP = 10;
 
   constructor() {
     super();
   }
 
   connectedCallback() {
+    this._setupGraph();
+    DeviceEvents.getInstance().addEventListener("analog-input", this._handleNewStateEvent);
+  }
+
+  disconnectedCallback() {
+    DeviceEvents.getInstance().removeEventListener("analog-input", this._handleNewStateEvent);
+  }
+
+  private _setupGraph() {
     const svgNS = "http://www.w3.org/2000/svg";
+    const title = this.innerText;
+    this.innerHTML = "";
 
     const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("viewBox", "0 0 200 100");
+    svg.setAttribute("viewBox", `0 0 200 ${this.VIEW_HEIGHT}`);
     svg.setAttribute("width", "100%");
-    svg.setAttribute("height", "auto");
+    svg.setAttribute("height", "100%");
 
     this.path = document.createElementNS(svgNS, "path");
     this.path.setAttribute("fill", "none");
     this.path.setAttribute("stroke", "var(--color-utfpr)");
-    this.path.setAttribute("stroke-width", "1");
+    this.path.setAttribute("stroke-width", "1.5");
 
-    const lineX = document.createElementNS(svgNS, "line");
-    lineX.setAttribute("x1", "30");
-    lineX.setAttribute("y1", "90");
-    lineX.setAttribute("x2", "190");
-    lineX.setAttribute("y2", "90");
-    lineX.setAttribute("stroke", "var(--color-text)");
-    lineX.setAttribute("stroke-width", "1");
+    const axes = document.createElementNS(svgNS, "g");
+    axes.setAttribute("stroke", "var(--color-text)");
+    axes.setAttribute("stroke-width", "1");
+    axes.setAttribute("opacity", "0.5");
 
-    const lineY = document.createElementNS(svgNS, "line");
-    lineY.setAttribute("x1", "30");
-    lineY.setAttribute("y1", "10");
-    lineY.setAttribute("x2", "30");
-    lineY.setAttribute("y2", "90");
-    lineY.setAttribute("stroke", "var(--color-text)");
-    lineY.setAttribute("stroke-width", "1");
+    const lineX = this._createSvgElement(svgNS, "line", { x1: "30", y1: "90", x2: "190", y2: "90" });
+    const lineY = this._createSvgElement(svgNS, "line", { x1: "30", y1: "10", x2: "30", y2: "90" });
+    axes.append(lineX, lineY);
 
-    const maxText = document.createElementNS(svgNS, "text");
-    maxText.setAttribute("x", "28");
-    maxText.setAttribute("y", "10");
-    maxText.setAttribute("font-size", "8");
-    maxText.setAttribute("fill", "var(--color-text)");
-    maxText.setAttribute("text-anchor", "end");
-    maxText.setAttribute("dominant-baseline", "text-before-edge");
-    maxText.innerHTML = String(this.max);
+    const minTxt = this._createText(svgNS, "28", "90", String(this.min), "end", "text-after-edge");
+    const maxTxt = this._createText(svgNS, "28", "10", String(this.max), "end", "text-before-edge");
 
-    const minText = document.createElementNS(svgNS, "text");
-    minText.setAttribute("x", "28");
-    minText.setAttribute("y", "90");
-    minText.setAttribute("font-size", "8");
-    minText.setAttribute("fill", "var(--color-text)");
-    minText.setAttribute("text-anchor", "end");
-    minText.setAttribute("dominant-baseline", "text-after-edge");
-    minText.innerHTML = String(this.min);
+    this.currentText = this._createText(svgNS, "190", "10", "--", "end", "text-before-edge");
 
-    const currentText = document.createElementNS(svgNS, "text");
-    currentText.setAttribute("x", "190");
-    currentText.setAttribute("y", "10");
-    currentText.setAttribute("font-size", "7");
-    currentText.setAttribute("fill", "var(--color-text)");
-    currentText.setAttribute("text-anchor", "end");
-    currentText.setAttribute("dominant-baseline", "text-before-edge");
+    const titleTxt = this._createText(svgNS, "100", "0", title, "middle", "text-before-edge");
 
-    const titleText = document.createElementNS(svgNS, "text");
-    titleText.setAttribute("x", "100");
-    titleText.setAttribute("y", "0");
-    titleText.setAttribute("font-size", "7");
-    titleText.setAttribute("fill", "var(--color-text)");
-    titleText.setAttribute("text-anchor", "middle");
-    titleText.setAttribute("dominant-baseline", "text-before-edge");
-    titleText.innerHTML = this.innerHTML;
-    this.innerHTML = "";
-
-    svg.append(this.path, lineX, lineY, maxText, minText, currentText, titleText);
-
-    this.append(svg);
-
-    const deviceEvents = DeviceEvents.getInstance();
-
-    deviceEvents.addEventListener("analog-input", this._handleNewStateEvent)
+    svg.append(axes, this.path, minTxt, maxTxt, this.currentText, titleTxt);
+    this.appendChild(svg);
   }
 
-  get name() {
-    const name = this.getAttribute("name");
-
-    if (name === null) {
-      throw new Error("Name undefined");
-    }
-
-    return name;
+  private _createSvgElement(ns: string, tag: string, attrs: Record<string, string>) {
+    const el = document.createElementNS(ns, tag);
+    for (const key in attrs) el.setAttribute(key, attrs[key]);
+    return el;
   }
 
-  get min() {
-    const min = this.getAttribute("min");
-
-    if (min === null) {
-      throw new Error("Min undefined");
-    }
-
-    return Number(min);
-  }
-
-  get max() {
-    const max = this.getAttribute("max");
-
-    if (max === null) {
-      throw new Error("Max undefined");
-    }
-
-    return Number(max);
-  }
-
-  get num() {
-    const num = this.getAttribute("num");
-
-    if (num === null) {
-      throw new Error("Num undefined");
-    }
-
-    return Number(num);
+  private _createText(ns: string, x: string, y: string, content: string, anchor: string, baseline: string) {
+    const txt = document.createElementNS(ns, "text");
+    txt.setAttribute("x", x); txt.setAttribute("y", y);
+    txt.setAttribute("font-size", "7");
+    txt.setAttribute("fill", "var(--color-text)");
+    txt.setAttribute("text-anchor", anchor);
+    txt.setAttribute("dominant-baseline", baseline);
+    txt.textContent = content;
+    return txt;
   }
 
   addRecord(value: number) {
-    if (this.path === null) {
-      return;
-    };
+    if (!this.path || !this.currentText) return;
 
-    value = Number((80 - ((80 / (this.max - this.min)) * value)).toFixed(0));
+    this.currentText.textContent = value.toString();
+
+    const range = this.max - this.min;
+    const availableHeight = this.GRAPH_BOTTOM - this.GRAPH_TOP;
+    const normalizedY = this.GRAPH_BOTTOM - (((value - this.min) / range) * availableHeight);
+
     const maxRecords = (this.MARGIN_RIGHT - this.MARGIN_LEFT) / this.STEPS;
-    this.records = [value, ...this.records.slice(0, maxRecords)];
+    this.records = [normalizedY, ...this.records.slice(0, maxRecords)];
 
-    let linePath = "M ";
-    this.records.forEach((record, i) => {
-      linePath += `${this.MARGIN_RIGHT - (i * this.STEPS)} ${record} `;
-    });
+    const linePath = this.records.map((y, i) =>
+      `${i === 0 ? 'M' : 'L'} ${this.MARGIN_RIGHT - (i * this.STEPS)} ${y}`
+    ).join(" ");
 
     this.path.setAttribute("d", linePath);
   }
 
+  get min() { return Number(this.getAttribute("min") || 0); }
+  get max() { return Number(this.getAttribute("max") || 100); }
+  get num() { return Number(this.getAttribute("num")); }
+
   private _handleNewStateEvent = (data: NewAnalogStateEvent["data"]) => {
-    if (this.num === data.num) {
-      this.addRecord(data.value);
-    }
+    if (this.num === data.num) this.addRecord(data.value);
   }
 }
 
