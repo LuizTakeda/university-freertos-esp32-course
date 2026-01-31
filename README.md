@@ -21,6 +21,58 @@ Part of [*The Parallel Computing School: Short Courses and Tutorials*](https://g
 [![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white)](https://expressjs.com/)
 
+## Architecture
+
+The system is designed using an Event-Driven Architecture.
+
+- **Real-Time Monitoring**: Instead of traditional HTTP polling, this project implements Server-Sent Events (SSE). This allows the ESP32 to push sensor updates to the frontend instantly as they happen, significantly reducing network traffic and latency.
+- **Non-Blocking Hardware Abstraction**: Each hardware peripheral (Analog, Digital, Sensors) operates in its own dedicated FreeRTOS task. They communicate with the Web Server via asynchronous events, ensuring that a slow sensor read never freezes the UI or the WiFi stack.
+
+```mermaid
+flowchart TB
+    %% Extern entity
+    User((User/Browser)) <-->|HTTP/SSE| Web_Server 
+
+    subgraph ESP32_Firmware [ESP32 Application]
+        direction LR
+
+        subgraph ESPIDF [System Services]
+            direction TB
+            WiFi[WiFi Driver] --> EventLoop[Default Event Loop]
+        end
+
+        subgraph Web_Server [Web Server]
+            direction TB
+            WBURIHandler[URI Handlers]
+            WBEvent[Event Handlers]
+            WBSSE[SSE Task]
+            WBEvent --> WBSSE 
+        end
+
+        subgraph Hardware_Drivers [Hardware Abstraction Layer]
+            direction TB
+            
+            subgraph Inputs [Monitoring]
+                direction LR
+                Analog_Input[Analog Input Task]
+                Digital_Input[Digital Input Task]
+                Sensor_Block[Sensor Task]
+            end
+
+            DigitalOutput[Digital Output]
+        end
+
+        %% Connections
+        EventLoop --"IP/WIFI Events"--> Web_Server
+        Inputs --"Events"--> Web_Server
+        Web_Server <--"Control"--> DigitalOutput
+    end
+
+    %% Styling
+    style Web_Server stroke:#01579b,stroke-width:2px
+    style Hardware_Drivers stroke:#33691e
+    style ESPIDF stroke:#e65100
+```
 
 ## Frontend
 
@@ -36,4 +88,3 @@ The dashboard is built with [Web Components](https://developer.mozilla.org/en-US
 <img height="500" alt="image" src="https://github.com/user-attachments/assets/483c86ad-356a-498a-ae5c-352f311a1cb6" />
 
 For more details, see the [Frontend README](./components/web_server/frontend/README.md)
-
